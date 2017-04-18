@@ -1,0 +1,9 @@
+chr - chr1 mt1 0 52991155 chr1
+chr - chr2 mt2 0 45729672 chr2
+chr - chr3 mt3 0 55515152 chr3
+chr - chr4 mt4 0 56582383 chr4
+chr - chr5 mt5 0 43630510 chr5
+chr - chr6 mt6 0 35275713 chr6
+chr - chr7 mt7 0 49172423 chr7
+chr - chr8 mt8 0 45569985 chr8
+
