@@ -7,7 +7,6 @@ downloadDir=$(pwd)
 requiredSamtoolsVersion="1.3.1"
 requiredBWAVersion="0.7.12"
 requiredBedtoolsVersion="2.26.0"
-requiredBCFToolsVersion="1.3.1"
 requiredCircosVersion="0.69-3"
 
 # apt-get or yum
@@ -27,7 +26,6 @@ needInstallCPan=1
 needInstallSamtools=1
 needInstallBwa=1
 needInstallBedtools=1
-needInstallBcftools=1
 needInstallCircos=1
 
 # Function definitions
@@ -66,9 +64,6 @@ check_installed_tools() {
     test -x "/usr/local/bin/bedtools"; 
     needInstallBedtools=$?
 
-    test -x "/usr/local/bin/bcftools"; 
-    needInstallBcftools=$?
-
     test -d "/usr/local/circos";
     needInstallCircos=$?
 
@@ -77,7 +72,7 @@ check_installed_tools() {
     fi
 
     # Warn if any software is already installed (ie, needInstall[NameOfTool] = 0)
-    if [ "$needInstallSamtools" = 0 ] || [ "$needInstallBwa" = 0 ] || [ "$needInstallBedtools" = 0 ] || [ "$needInstallBcftools" = 0 ] || [ "$needInstallCircos" = 0 ]; then
+    if [ "$needInstallSamtools" = 0 ] || [ "$needInstallBwa" = 0 ] || [ "$needInstallBedtools" = 0 ] || [ "$needInstallCircos" = 0 ]; then
         print_installed_software
     fi
 }
@@ -200,10 +195,6 @@ print_installed_software() {
         printf "    Bedtools\n"
     fi
 
-    if [ "$needInstallBcftools" = 0 ] && [ "$(bcftools -v | head -n1 | cut -d" " -f2)" != "$requiredBCFToolsVersion" ]; then
-        printf "    BCFTools\n"
-    fi
-
     if [ "$needInstallCircos" = 0 ]; then
         printf "    Circos\n"
     fi
@@ -269,21 +260,6 @@ install_bedtools() {
     sudo cp ./bin/bedtools /usr/local/bin
 
     printf "\nBedtools successfully installed.\n"
-}
-
-install_bcftools() {
-    printf "\nDownloading BCFTools ${requiredBCFToolsVersion}\n\n"
-    mkdir /tmp/bcftools-${requiredBCFToolsVersion}
-    cd /tmp/bcftools-${requiredBCFToolsVersion} && wget https://github.com/samtools/bcftools/releases/download/${requiredBCFToolsVersion}/bcftools-${requiredBCFToolsVersion}.tar.bz2
-    
-    printf "\nInstalling BCFTools ${requiredBCFToolsVersion}\n\n"
-    sudo bzip2 -d bcftools-${requiredBCFToolsVersion}.tar.bz2 && tar -xf bcftools-${requiredBCFToolsVersion}.tar
-    cd bcftools-${requiredBCFToolsVersion}/
-
-    sudo make
-    sudo cp bcftools /usr/local/bin
-
-    printf "\nBCFTools successfully installed.\n"
 }
 
 install_circos() {
@@ -357,7 +333,6 @@ clean() {
     sudo rm -rf /tmp/sam-tools-${requiredSamtoolsVersion}/
     sudo rm -rf /tmp/bwa-${requiredBWAVersion}
     sudo rm -rf /tmp/bedtools-${requiredBedtoolsVersion}
-    sudo rm -rf /tmp/bcftools-${requiredBCFToolsVersion}
     sudo rm -rf /tmp/circos-${requiredCircosVersion}
 }
 
@@ -370,10 +345,6 @@ install_prerequisites() {
 
     if [ "$(bedtools --version | head -n1 | cut -d" " -f2)" != "v$requiredBedtoolsVersion" ]; then
         install_bedtools
-    fi
-
-    if [ "$(bcftools -v | head -n1 | cut -d" " -f2)" != "$requiredBCFToolsVersion" ]; then
-        install_bcftools
     fi
 
     install_circos
