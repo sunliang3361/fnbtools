@@ -24,13 +24,6 @@ RUN cd /tmp/bedtools-2.26.0 && gunzip bedtools-2.26.0.tar.gz && tar -xf bedtools
 RUN cd /tmp/bedtools-2.26.0/bedtools2 && make
 RUN cd /tmp/bedtools-2.26.0/bedtools2/bin && cp bedtools /usr/local/bin
 
-
-RUN mkdir /tmp/bcftools-1.3.1
-RUN cd /tmp/bcftools-1.3.1 && wget https://github.com/samtools/bcftools/releases/download/1.3.1/bcftools-1.3.1.tar.bz2
-RUN cd /tmp/bcftools-1.3.1 && bzip2 -d bcftools-1.3.1.tar.bz2 && tar -xf bcftools-1.3.1.tar
-RUN cd /tmp/bcftools-1.3.1/bcftools-1.3.1 && make
-RUN cd /tmp/bcftools-1.3.1/bcftools-1.3.1 && cp bcftools /usr/local/bin
-
 RUN mkdir /usr/local/circos
 RUN cd /usr/local/circos && wget http://circos.ca/distribution/circos-0.69-3.tgz
 RUN cd /usr/local/circos && tar xvfz circos-0.69-3.tgz
