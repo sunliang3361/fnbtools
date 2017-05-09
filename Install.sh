@@ -317,6 +317,11 @@ install_fnb_main() {
     printf "\nfnbscan copied!\n"
 
     cd $downloadDir
+    sudo cp CircosVis.py /usr/local/bin/circosvis
+    sudo chmod 755 /usr/local/bin/fnbscircosviscan
+    printf "\ncircosvis copied!\n"
+
+    cd $downloadDir
     if [ ! -d "/usr/local/fnbtools" ]; then
         sudo mkdir /usr/local/fnbtools
     fi
