@@ -24,7 +24,7 @@ Parameters:
 Example:
 perl fnbalign.pl -n fnb -g mt4_chr1_2Mb.fa -1 mt4_chr1_raw_20x1.fq mt4_chr1_mut_20x1.fq -2 mt4_chr1_raw_20x2.fq mt4_chr1_mut_20x2.fq
 
-### Step2 - Identify deletions in mutant sample(s)
+### Step 2 - Identify deletions in mutant sample(s)
 Usage:
 	fnbscan -n fnb -c control.bed -m mutant.bed
 Parameters:
