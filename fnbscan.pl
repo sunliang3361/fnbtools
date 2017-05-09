@@ -7,31 +7,39 @@ use File::Basename;
 
 #########################  parameters #####################
 my $usage = "USAGE:
-	$0 
-	REQUIRED -c the paired read file 1
-	REQUIRED -m the paired read file 2
-	
+	$0
+	REQUIRED -n the project name
+	REQUIRED -c the control bedg file(s)
+	REQUIRED -m the mutant bedg file(s)
 
 	OPTIONS:
-	    -f input annotation file to annotate deletions     
-		-h print this help message    
+	-f input annotation file to annotate deletions     
+	-h print this help message
+	-a print all homo deletions in mutant including the deletions exist in control sample [0|1, default:0]
+	-r the overlapping rate between gaps and informative deletion at the same genomic regions [default:0.9]
+	-d the minimal distance between the breakpoint of informative reads and the start postion of gap [default:20]
+	-b the minimal crossed reads when there is no clipped reads [default:3]
 
-
-	eg: perl FNBscan.pl -n fnb -c fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -f Mtruncatula_285_Mt4.0v1.gene.gff3
-	eg: perl FNBscan.pl -n 20x -c 20x/20x.mt4_sim20x1.bedg -m 20x/20x.mt4_mut300_sim20x1.bedg -o 20x/alldeletion_20x.bed
-	eg: perl FNBscan.pl -n 20x_351 -c 20x_351/20x_351.mt4_sim20x1.bedg -m 20x_351/20x_351.mt4_mut351_sim20x1.bedg -o 20x_351/alldeletion_20x_351.bed
-	eg: perl FNBscan.pl -n 10x_351 -c 10x_351/10x_351.mt4_sim10x1.bedg -m 10x_351/10x_351.mt4_mut351_sim10x1.bedg -o 10x_351/alldeletion_10x_351.bed
+	eg: perl fnbscan.pl -n fnb -c fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -f Mtruncatula_285_Mt4.0v1.gene.gff3
+	eg: perl fnbscan.pl -n 20x -c 20x/20x.mt4_sim20x1.bedg -m 20x/20x.mt4_mut300_sim20x1.bedg -o 20x/alldeletion_20x.bed
+	eg: perl fnbscan.pl -n 20x_351 -c 20x_351/20x_351.mt4_sim20x1.bedg -m 20x_351/20x_351.mt4_mut351_sim20x1.bedg -o 20x_351/alldeletion_20x_351.bed
+	eg: perl fnbscan.pl -n 10x_351 -c 10x_351/10x_351.mt4_sim10x1.bedg -m 10x_351/10x_351.mt4_mut351_sim10x1.bedg -o 10x_351/alldeletion_10x_351.bed
 	";
 
 die "$usage\n" if (@ARGV == 0);
 
-my $dir = "/usr/local/fnbtools/";
+my $dir = "/usr/local/fnbtools";
+#my $dir = "$FindBin::Bin";
 my $proj   = "fnb"; 
 my @cfile;
 my @mfile;
 my $gff = "";
 my $outfile;
 my $help = '';
+my $orate = 0.9;
+my $minDiff = 20;
+my $minCRR = 3;
+my $allHomo = 0;
 my $cmd;
 
 
@@ -40,6 +48,10 @@ GetOptions(
 	'-m=s@{1,}'=> \@mfile,
 	'-n=s' =>\$proj,
 	'-f=s' =>\$gff,
+	'-r=f' =>\$orate,
+	'-d=i' =>\$minDiff,
+	'-b=i' =>\$minCRR,
+	'-a=i' =>\$allHomo,
 	'-o=s' =>\$outfile,
 	'-h' => \$help
 );
@@ -52,15 +64,16 @@ my $outfilebase = basename $outfile;
 
 
 ######################### Step1: call VarDiff to identify SNP and small indels##############
-my $cfile_vd = process_input(\@cfile,"vcf");
-my $mfile_vd = process_input(\@mfile,"vcf");
-$cmd = "python ${dir}VarDiff.py -c $cfile_vd -m $mfile_vd -o $result_dirc/$proj.$filebase.unique.vcf";
-process_cmd($cmd);
+# my $cfile_vd = process_input(\@cfile,"vcf");
+# my $mfile_vd = process_input(\@mfile,"vcf");
+# $cmd = "python VarDiff.py -c $cfile_vd -m $mfile_vd -o $result_dirc/$proj.$filebase";
+# process_cmd($cmd);
 
 ##########################Step2: call DelDiff to identify deletions and merge the deletions identified from clipped and cross reads###############
 my $cfiles = join(" ",@cfile);
 my $mfiles = join(" ",@mfile);
-$cmd = "python ${dir}DelDiff.py -c $cfiles -m $mfiles -f $result_dirc/$proj.$filebase.unique.vcf.del -o $outfile ";
+#$cmd = "python DelDiff.py -c $cfiles -m $mfiles -f $result_dirc/$proj.$filebase.unique.vcf.del -r $orate -d $minDiff -b $$minCRR -o $outfile ";
+$cmd = "python $dir/DelDiff.py -c $cfiles -m $mfiles -f $result_dirc/$proj.$filebase -r $orate -d $minDiff -b $minCRR -a $allHomo -o $outfile ";
 process_cmd($cmd);
 
 
@@ -71,7 +84,7 @@ if ($gff){  #we will annotate deletion files
 	my $ofile_del = $ofilebase."_annot.bed";
 	#annotate all SNPs
 	#my $ofile_snp =
-	$cmd = "python VarAnnot.py -i $outfile -t b -f $gff -o $ofile_del";
+	$cmd = "python $dir/VarAnnot.py -i $outfile -t b -f $gff -o $ofile_del";
 	process_cmd($cmd);
 }
 

@@ -20,17 +20,18 @@ my $usage = "USAGE:
 		-h print this help message    
 
 	
-		eg: perl FNBalign.pl -n fnb -g rice_chr1_200k.fa -1 rice_chr1_20x_mut_1.fq rice_chr1_20x_raw_1.fq -2 rice_chr1_20x_mut_2.fq rice_chr1_20x_raw_2.fq
-		eg: perl FNBalign.pl -n fnb -g mt4_chr1_2Mb.fa -1 mt4_chr1_raw_20x1.fq mt4_chr1_mut_20x1.fq -2 mt4_chr1_raw_20x2.fq mt4_chr1_mut_20x2.fq
-		eg: perl FNBalign.pl -n 20x -g mt4.fa -1 mt4_mut300_sim20x1.fq mt4_sim20x1.fq -2 mt4_mut300_sim20x2.fq mt4_sim20x2.fq
-		eg: perl FNBalign.pl -n 10x_351 -g mt4.fa -1 mt4_mut351_sim10x1.fq mt4_sim10x1.fq -2 mt4_mut351_sim10x2.fq mt4_sim10x2.fq
-		eg: perl FNBalign.pl -n 20x_351 -g mt4.fa -1 mt4_mut351_sim20x1.fq mt4_sim20x1.fq -2 mt4_mut351_sim20x2.fq mt4_sim20x2.fq
-		eg: perl FNBalign.pl -n 50x_351 -g mt4.fa -1 mt4_mut351_sim50x1.fq mt4_sim50x1.fq -2 mt4_mut351_sim50x2.fq mt4_sim50x2.fq
+		eg: perl fnbalign.pl -n fnb -g rice_chr1_200k.fa -1 rice_chr1_20x_mut_1.fq rice_chr1_20x_raw_1.fq -2 rice_chr1_20x_mut_2.fq rice_chr1_20x_raw_2.fq
+		eg: perl fnbalign.pl -n fnb -g mt4_chr1_2Mb.fa -1 mt4_chr1_raw_20x1.fq mt4_chr1_mut_20x1.fq -2 mt4_chr1_raw_20x2.fq mt4_chr1_mut_20x2.fq
+		eg: perl fnbalign.pl -n 20x -g mt4.fa -1 mt4_mut300_sim20x1.fq mt4_sim20x1.fq -2 mt4_mut300_sim20x2.fq mt4_sim20x2.fq
+		eg: perl fnbalign.pl -n 10x_351 -g mt4.fa -1 mt4_mut351_sim10x1.fq mt4_sim10x1.fq -2 mt4_mut351_sim10x2.fq mt4_sim10x2.fq
+		eg: perl fnbalign.pl -n 20x_351 -g mt4.fa -1 mt4_mut351_sim20x1.fq mt4_sim20x1.fq -2 mt4_mut351_sim20x2.fq mt4_sim20x2.fq
+		eg: perl fnbalign.pl -n 50x_351 -g mt4.fa -1 mt4_mut351_sim50x1.fq mt4_sim50x1.fq -2 mt4_mut351_sim50x2.fq mt4_sim50x2.fq
 	";
 
 die "$usage\n" if (@ARGV == 0);
 
-my $dir = "/usr/local/fnbtools/";
+my $dir = "/usr/local/fnbtools";
+#my $dir = "$FindBin::Bin";
 my $genome;
 my $proj   = "fnb";                 
 my @rs1_originals;
@@ -162,51 +163,66 @@ foreach my $rs1 (@rs1_originals){
 
 	#my $transformtobed_bam ;
 	# if($fast =~ /N/i and $bam == 0){
-	#$cmd = "bwa mem -T 20 -t $cpu_bwa $result_temp/$proj.ref.fa $rs1 $rs2 |samtools view -@ $cpu_view -q 30 -h  -| tee $result_temp/$proj.$rs1_file._ref.sam  |samtools view -@ $cpu_view -buS -q 30 - | samtools sort -@ $cpu_sort  - -O bam -o $result_temp/$proj.$rs1_file._ref.sort.bam";
-	$cmd = "bwa mem -T 20 -t $cpu_bwa $result_temp/$proj.ref.fa $rs1 $rs2 |tee $result_temp/$proj.$rs1_file._ref.sam  |samtools view -@ $cpu_view -buS -q 30 - | samtools sort -@ $cpu_sort  - -O bam -o $result_temp/$proj.$rs1_file._ref.sort.bam";
+	#$cmd = "bwa mem -T 20 -t $cpu_bwa $result_temp/$proj.ref.fa $rs1 $rs2 |tee $result_temp/$proj.$rs1_file._ref.sam  |samtools view -@ $cpu_view -buS -q 30 - | samtools sort -@ $cpu_sort  - -O bam -o $result_temp/$proj.$rs1_file._ref.sort.bam";
+	$cmd = "bwa mem -T 20 -t $cpu_bwa $result_temp/$proj.ref.fa $rs1 $rs2 > $result_temp/$proj.$rs1_file.ref.sam";
 	process_cmd($cmd);
-	#index bam file
-	$cmd = "samtools index $result_temp/$proj.$rs1_file._ref.sort.bam";
+	
+	#call extractInfoRead here to extract all informative reads (cross reads and clipped reads) and modify the sam file to get the deletion bar for IGV
+	$cmd = "perl -I $dir $dir/extractInfoRead.pl -s $result_temp/$proj.$rs1_file.ref.sam -n $result_dirc/$proj.$rs1_file -l $lib_len "; 
+	process_cmd($cmd);
+	
+	# remove the sam file which takes too much space
+	$cmd = "rm $result_temp/$proj.$rs1_file.ref.sam";
+	#process_cmd($cmd);
+	
+	#convert sam to bam, sort and index bam file
+	$cmd = "samtools view -@ $cpu_view -buS -q 30 $result_dirc/$proj.$rs1_file.fix.sam | samtools sort -@ $cpu_sort  - -O bam -o $result_temp/$proj.$rs1_file.ref.sort.bam";
+	process_cmd($cmd);
+	
+	$cmd = "samtools index $result_temp/$proj.$rs1_file.ref.sort.bam";
 	process_cmd($cmd);
 
+	# remove the fixed sam file which takes too much space
+	$cmd = "rm $result_dirc/$proj.$rs1_file.fix.sam";
+	#process_cmd($cmd);
 
 	##### Step 2 samtools call variances #####
-	#samtools mpileup -B -f mt4.fa sorted.bam | bcftools view -bvcg - >var.raw.bcf
+	# #samtools mpileup -B -f mt4.fa sorted.bam | bcftools view -bvcg - >var.raw.bcf
 
-	$cmd="samtools mpileup -ugf $result_temp/$proj.ref.fa $result_temp/$proj.$rs1_file._ref.sort.bam | bcftools call -vm -o $result_temp/var_${rs1_file}.vcf";
-	process_cmd($cmd);
+	# $cmd="samtools mpileup -ugf $result_temp/$proj.ref.fa $result_temp/$proj.$rs1_file.ref.sort.bam | bcftools call -vm -o $result_temp/var_${rs1_file}.vcf";
+	# process_cmd($cmd);
 
-	##### Calculate AF
-	open AF, ">$result_dirc/$proj.${rs1_file}.vcf" or die $!;
-	print AF "#CHROM\tPOS\tID\tREF\tALT\tAF\n";
-	open (RawVCFFile,"<$result_temp/var_${rs1_file}.vcf");
-	my @VCFContent =<RawVCFFile>;
+	# ##### Calculate AF
+	# open AF, ">$result_dirc/$proj.${rs1_file}.vcf" or die $!;
+	# print AF "#CHROM\tPOS\tID\tREF\tALT\tAF\n";
+	# open (RawVCFFile,"<$result_temp/var_${rs1_file}.vcf");
+	# my @VCFContent =<RawVCFFile>;
 	
-	chomp(@VCFContent);
-	foreach my $line (@VCFContent){
-		if($line =~ m/^#/){
-			next;
-		}else{
-			my @contents=split(/;/,$line);
-			my @chromInfo = split(/\t/,$contents[0]);
-			print AF "$chromInfo[0]\t$chromInfo[1]\t$chromInfo[2]\t$chromInfo[3]\t$chromInfo[4]";
-			my $dp4="DP4=";
-			my $replace="";
-			foreach my $content (@contents){
-				if($content =~ m/^DP4/){
-					$content =~ s/$dp4/$replace/g;
-					my @alleles = split(/,/,$content);
-					my $vaf = ($alleles[2]+$alleles[3])/($alleles[0]+$alleles[1]+$alleles[2]+$alleles[3]);
-					print AF "\t$vaf\n";					
-				}
-			}
-		}
-	}
+	# chomp(@VCFContent);
+	# foreach my $line (@VCFContent){
+		# if($line =~ m/^#/){
+			# next;
+		# }else{
+			# my @contents=split(/;/,$line);
+			# my @chromInfo = split(/\t/,$contents[0]);
+			# print AF "$chromInfo[0]\t$chromInfo[1]\t$chromInfo[2]\t$chromInfo[3]\t$chromInfo[4]";
+			# my $dp4="DP4=";
+			# my $replace="";
+			# foreach my $content (@contents){
+				# if($content =~ m/^DP4/){
+					# $content =~ s/$dp4/$replace/g;
+					# my @alleles = split(/,/,$content);
+					# my $vaf = ($alleles[2]+$alleles[3])/($alleles[0]+$alleles[1]+$alleles[2]+$alleles[3]);
+					# print AF "\t$vaf\n";					
+				# }
+			# }
+		# }
+	# }
 	 
 	##### Step 3 identify large deletions ---Liang #####
 
-	$cmd= "bedtools genomecov -ibam $result_temp/$proj.$rs1_file._ref.sort.bam -bga |";
-	#$cmd= "genomeCoverageBed -ibam $result_dirc/$proj.${rs1}_${rs2}_aln_reference.sort.bam -bga | awk '$4==0' > $result_dirc/$proj.${rs1}_gap.bedg";
+	#$cmd= "genomeCoverageBed -ibam $result_temp/$proj.$rs1_file.ref.sort.bam -bga |";
+	$cmd= "bedtools genomecov -ibam $result_temp/$proj.$rs1_file.ref.sort.bam -bga |";
 	open (OUT, ">$result_dirc/$proj.$rs1_file.bedg") or die ("cannot open bedg file");
 	open IN, $cmd;
 	while(my $line =<IN>){
@@ -219,13 +235,7 @@ foreach my $rs1 (@rs1_originals){
 	close(IN);
 	close(OUT);
 	
-	##### Step 4 extract all informative reads (cross reads and clipped reads)
-	$cmd = "perl ${dir}extractInfoRead.pl -s $result_temp/$proj.$rs1_file._ref.sam -n $result_dirc/$proj.$rs1_file -l $lib_len "; 
-	process_cmd($cmd);
-	
-	# remove the sam file which takes too much space
-	$cmd = "rm $result_temp/$proj.$rs1_file._ref.sam";
-	process_cmd($cmd);
+
 	
 	$findex=$findex+1;
 }

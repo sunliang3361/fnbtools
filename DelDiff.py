@@ -5,7 +5,7 @@
 # compare with the other three sample, if this deletion appears less than three time, we filter it out.
 
 #encoding:utf-8
-"""
+usage = """
 VarDiff.py
 created by Liang Sun on 2016-10-13
 Copyright (c) 2016 Liang Sun. All rights reserved.
@@ -195,77 +195,41 @@ def read_more_File(files, type):
 			chr_s1.clear()
 			chr_s1 = chr_out.copy()
 						
-	return chr_s1		
+	return chr_s1
 
-	
-	
-def compareDel(chr_s1,chr_s2,orate):
-	#chr_s1 is the mutanted sample
-	chr_sig = {}
-	for chr in chr_s1:
-		# print chr_s1[chr]
-		for s1, e1 in chr_s1[chr]:
-			# print str(s1)+'------' + str(e1)
-			if not chr in chr_s2:
-				continue
-			
-			flag = 0
-			for s2, e2 in chr_s2[chr]:
-				if s2>=s1 and s2<=e1:
-					flag = 1
-					if e2< e1:
-						olp = float(float(e2-s2)/float(e1-s1))
-						#print str(s1)+'--'+str(e1)+'--'+str(s2)+'--'+str(e2)
-						if olp < orate:
-							# print chr+"\t"+str(s1)+"\t"+str(e1) +'--------' +chr+"\t"+str(s2)+"\t"+str(e2) 
-							chr_sig[(chr,s1,e1)] = "low"
-							break
+# def read_more_File(files):
+# 	chr_gap = {}
+# 	flag = 0
+# 	for f in files:
+# 		f = f.strip()
+# 		print "Read gap file: "+f
+# 		FileIN = open(f, 'rU') or die ("can not open")
+# 		for line in FileIN:
+# 			data = line.strip().split("\t")
+# 			length = int(data[2]) - int(data[1])
+# 			if length >= 1: #100
+# 				if not chr_gap.has_key(data[0]):
+# 					chr_gap[data[0]] = [(int(data[1]),int(data[2]))]
+# 				else:
+# 					chr_gap[data[0]].append((int(data[1]),int(data[2])))
+# 		FileIN.close()
+# 	return chr_gap
 
-					else:
-						olp = float(float(e1-s2)/float(e1-s1))
-						if olp < orate:
-							# print chr+"\t"+str(s1)+"\t"+str(e1) +'--------' +chr+"\t"+str(s2)+"\t"+str(e2)
-							chr_sig[(chr,s1,e1)] = "low"
-							break
-							# print str(s1)+'**'+str(e1)+'**'+str(s2)+'**'+str(e2)
-							# print str(olp)
-							# print "&&&&&&&&"
-							#FileOUT.write(chr + '\t'+ str(s1)+ '\t'+ str(e1)+ '\t'+ str((e1-s1))+'\t'+ str(s2)+ '\t'+ str(e2)+ '\t'+str((e2-s2))+"\n")
-				elif s2<=s1 and e2>=s1:
-					flag = 1
-					if e2<e1:
-						olp = float(float(e2-s1)/float(e1-s1))
-						if olp < orate:
-							# print chr+"\t"+str(s1)+"\t"+str(e1) +'--------' +chr+"\t"+str(s2)+"\t"+str(e2)
-							chr_sig[(chr,s1,e1)] = "low"
-							break
-							#FileOUT.write(chr + '\t'+ str(s1)+ '\t'+ str(e1)+ '\t'+ str((e1-s1))+'\t'+ str(s2)+ '\t'+ str(e2)+ '\t'+str((e2-s2))+"\n")
-					else:
-						break
-							#FileOUT.write(chr + '\t'+ str(s1)+ '\t'+ str(e1)+ '\t'+ str((e1-s1))+'\t'+ str(s2)+ '\t'+ str(e2)+ '\t'+str((e2-s2))+"\n")
+# def readSmVar(ffile):
+# 	chr_filter = {}
+# 	FileIN = open(ffile, 'rU') or die ("can not open filter file!")
+# 	FileIN.readline()	
+# 	for line in FileIN:
+# 		data = line.strip().split("\t")
+# 		if not chr_filter.has_key(data[0]):
+# 			chr_filter[data[0]] = [(int(data[1]), int(data[2]))]
+# 		else:
+# 			chr_filter[data[0]].append((int(data[1]),int(data[2])))
+# 	FileIN.close()
+# 	return chr_filter
 
-			if flag == 0:
-				# print chr+"\t"+str(s1)+"\t"+str(e1) +'--------' +chr+"\t"+str(s2)+"\t"+str(e2)
-				chr_sig[(chr,s1,e1)] = "high"					
-				#FileOUT.write(chr + '\t'+ str(s1)+ '\t'+ str(e1)+ '\t'+ str((e1-s1))+'\tNA\tNA\tNA\n')
-	return chr_sig
-def readfilter(ffilter):
-	chr_filter = {}
-	FileIN = open(ffile, 'rU') or die ("can not open filter file!")
-	FileIN.readline()
-	global del_bcf_max
-	
-	for line in FileIN:
-		data = line.strip().split("\t")
-		del_bcf_max = max(del_bcf_max,int(data[3]))
-		if not chr_filter.has_key(data[0]):
-			chr_filter[data[0]] = [(int(data[1]), int(data[2]))]
-		else:
-			chr_filter[data[0]].append((int(data[1]),int(data[2])))
-	FileIN.close()
-	return chr_filter
 
-def readInfoDel(files):
+def readInfoDel(files,minCRR):
 	chr_infodel = {}
 	for f in files:
 		file = os.path.splitext(f)[0] + ".bed"
@@ -273,13 +237,20 @@ def readInfoDel(files):
 		FileIN.readline()
 		for line in FileIN:
 			data = line.strip().split("\t")
+			delInfo = "\t".join(data[4:])
 			if data[2].find("[")>-1:
 				continue
+			clr_n = data[5].split(";")[0].split("=")[1]
+			ccr_n = data[5].split(";")[1].split("=")[1]
+			smd_n = data[5].split(";")[2].split("=")[1]
+			if int(clr_n) == 0 and int(smd_n) == 0 and int(ccr_n) <= minCRR:          ####################cutoff to filter out inconfident deletions
+				continue
 			if chr_infodel.has_key(data[1]):
-				#print data[2]+"------"+data[3]
-				chr_infodel[data[1]].append((int(float(data[2].replace(",",""))),data[3]))
+				#print data[1]+"---"+ data[2]+"------"+data[3]
+				chr_infodel[data[1]].append((int(float(data[2].replace(",",""))),int(float(data[3].replace(",",""))),delInfo))
+				
 			else:
-				chr_infodel[data[1]] = [(int(float(data[2].replace(",",""))),data[3])]
+				chr_infodel[data[1]] = [(int(float(data[2].replace(",",""))),int(float(data[3].replace(",",""))),delInfo)]
 	return chr_infodel 
 		
 
@@ -290,12 +261,12 @@ t0 = time.time()
 
 cfile = ""
 mfile = ""
-del_bcf_max = 0
+
 chr_gap_c = {} # this is the all chromose and their deletion postion for control samples
 chr_gap_m = {} # this is the all chromose and their deletion postion for mutant samples
 
-chr_sig = {}
-chr_filter = {}
+chr_smVar_c= {}
+chr_smVar_m = {}
 chr_infodel_c = {} #chr_infodel[chr] = (breakpoint,support Reads)
 chr_infodel_m = {}
 
@@ -304,17 +275,25 @@ parser = argparse.ArgumentParser(description="DelDiff compare two or more sample
 parser.add_argument('--version', action='version', version='%(prog)s 1.0')
 parser.add_argument('-c', action='store', dest='cfile', nargs='+', help="one or multiple wild type bedg files")
 parser.add_argument('-m', action='store', dest='mfile', nargs='+', help="one or multiple mutant sample bedg files")
-parser.add_argument('-f', action='store', dest='ffile', help="bcf del file used to filter small dels")
+parser.add_argument('-f', action='store', dest='sfile', help="bcf del file used to filter small dels")
 parser.add_argument('-o', action='store', dest='ofile', help="the output file name for big file")
-parser.add_argument('-r', action='store', default='0.5', type=float, dest='orate', help="gap overlapping rates")
+parser.add_argument('-r', action='store', default='0.9', type=float, dest='orate', help="gap overlapping rates")
+parser.add_argument('-d', action='store', default='20', type=int, dest='minDiff', help="the minimal distance between the breakpoint and the start position of gap")
+parser.add_argument('-b', action='store', default='3', type=int, dest='minCRR', help="the minimal crossed reads when there is no clipped reads [default:3]")
+parser.add_argument('-a', action='store', default='0', type=int, dest='allHomo', help="print all homo deletions in mutant including the deletions exist in control sample")
 args = parser.parse_args()
 
 cfile = args.cfile
 mfile = args.mfile
-ffile = args.ffile
+sfile = args.sfile
 ofile = args.ofile
-orate = args.orate
+orate = args.orate #overlapping between control gap and the mutant inforamtive deletion
+minDiff = args.minDiff #the minimal distance between the start position of informative deletion and the gap in the mutant.
+minCRR = args.minCRR # if there is no clipped read, the minimal number of Crossed reads
+allHomo = args.allHomo
+minDiff_rep = 5 # the minimal distance difference to distinguish the informative deletion and small deletions
 
+print "Use overlapping rate:"+ str(orate)
 # print "cfile:"+str(len(cfile))
 # print "mfile:"+str(len(mfile))
 # print "orate:"+str(orate)	
@@ -347,14 +326,19 @@ elif len(cfile) == 1 and len(mfile) == 1:
 	chr_gap_c = read1File(cfile[0])
 
 	chr_gap_m = read1File(mfile[0])
+	
+# elif len(cfile) >= 1 and len(mfile) >= 1 :
+# 	chr_gap_c = read_more_File(cfile)  #find the merged gap regions
+# 	chr_gap_m = read_more_File(mfile)  #find the overlapping gap regions
+	
+chr_infodel_c = readInfoDel(cfile,minCRR)
+chr_infodel_m = readInfoDel(mfile,minCRR)
 
-
-##################### compare the gaps between merged gap #####################
-chr_sig = compareDel(chr_gap_m,chr_gap_c,orate)
-chr_filter = readfilter(ffile)
-
-chr_infodel_c = readInfoDel(cfile)
-chr_infodel_m = readInfoDel(mfile)
+# sfile_ctrl_del = sfile+".ctrl.del"
+# sfile_mut_del = sfile+".mut.del"
+# chr_smVar_c = readSmVar(sfile_ctrl_del)
+# chr_smVar_m= readSmVar(sfile_mut_del)
+	
 
 ### calculate the reliability of each identified 
 #calculate by the overlapping between normal and mutant samples
@@ -363,60 +347,154 @@ chr_infodel_m = readInfoDel(mfile)
 
 #need to figure out the cutoff??????????????????????????????
 #delFileFiltOUT = 'result/significant_filt_fnb.txt'
+#print chr_gap_c['chr2']
+
+deletions = {}
+
+for chr in chr_infodel_m:
+	for (brkpt,brkpt_end,delInfo) in chr_infodel_m[chr]:
+		flag_gap_m = 0 #check the mutant gap files
+		flag_info_c = 0 #check the chr_infodel_c file
+		flag_gap_c = 0 #check the control gap file
+		
+		del_meta = ""
+		gap_info = ""
+		clr_n = int(delInfo.split("\t")[1].split(";")[0].split("=")[1])
+		crr_n = int(delInfo.split("\t")[1].split(";")[1].split("=")[1])
+		smd_n = int(delInfo.split("\t")[1].split(";")[2].split("=")[1])
+		if not chr_gap_m or not chr_gap_m.has_key(chr):
+			continue
+		#check mutant gap file and decide whether it's homo
+		if smd_n > clr_n : #small deletion
+			for (gap_m_start,gap_m_end) in chr_gap_m[chr]:
+				if abs(gap_m_start-brkpt) <= minDiff_rep: #3bp difference
+					gap_info = str(gap_m_start)+"\t"+str(gap_m_end)
+					flag_gap_m = 1
+					break
+		else: # big deletion
+			flag_wiggle = 0
+			gap_length_m = 0
+			for (gap_m_start,gap_m_end) in chr_gap_m[chr]:
+				#if (start >= brkpt and start<=brkpt_end) or (end>=brkpt and end <=brkpt_end): #or (start<=brkpt and end>=brkpt_end) not necessary
+				if smd_n == 0 and clr_n == 0 : # only cross reads
+					if gap_m_start-brkpt>=0 and gap_m_start-brkpt <= 50: #make the threshold loose
+						#it is a homo deletion
+						flag_wiggle = 1
+						gap_info = str(gap_m_start)+"\t"+str(gap_m_end)
+					if gap_m_start >= (brkpt-150) and gap_m_end <= (brkpt_end+150):
+						gap_length_m = gap_length_m + (gap_m_end-gap_m_start)
+				else:
+					if gap_m_start-brkpt>=0 and gap_m_start-brkpt <= minDiff:
+						#it is a homo deletion
+						flag_wiggle = 1
+						gap_info = str(gap_m_start)+"\t"+str(gap_m_end)
+					if gap_m_start >= brkpt  and gap_m_end <= brkpt_end:
+						gap_length_m = gap_length_m + (gap_m_end-gap_m_start)
+					
+			if flag_wiggle == 1 and float((gap_length_m)/float(brkpt_end-brkpt)) >= orate:
+					flag_gap_m = 1
+			#print chr+"-"+str(brkpt)+"-"+str(float((gap_length_m)/float(brkpt_end-brkpt)))
+		if flag_gap_m == 1:
+			#control informative deletion file has no deletion data or no deletion for this chromosome
+			if not chr_infodel_c or not chr_infodel_c.has_key(chr):
+				pass
+			else:
+				if smd_n>= clr_n and clr_n>0:
+					for (brkpt_c,brkpt_end_c,delInfo_c) in chr_infodel_c[chr]:
+						if abs(brkpt-brkpt_c) <= minDiff_rep:
+							flag_info_c = 1
+							break
+				elif clr_n == 0 and smd_n == 0:
+					for (brkpt_c,brkpt_end_c,delInfo_c) in chr_infodel_c[chr]:
+						clr_n_c = int(delInfo_c.split("\t")[1].split(";")[0].split("=")[1])
+						crr_n_c = int(delInfo_c.split("\t")[1].split(";")[1].split("=")[1])
+						smd_n_c = int(delInfo_c.split("\t")[1].split(";")[2].split("=")[1])
+						if clr_n_c == 0 and smd_n_c == 0:
+							if abs(brkpt-brkpt_c) <= 150: #make the threshold loose
+								flag_info_c = 1
+								break
+						else:
+							if abs(brkpt-brkpt_c) <= minDiff:
+								flag_info_c = 1
+								break
+				else:
+					for (brkpt_c,brkpt_end_c,delInfo_c) in chr_infodel_c[chr]:
+						if abs(brkpt-brkpt_c) <= minDiff:
+							flag_info_c = 1
+							break
+			#deletions[(chr,brkpt)] =
+			del_meta =  str(brkpt_end)+"\t"+delInfo+"\t"+gap_info+"\t"
+			if flag_info_c == 1:
+				del_meta = del_meta + "Yes\tYes\tNo"
+			else:
+				del_meta  = del_meta + "Yes\tNo\tYes"
+				#check whether the control gap file has gap at these area
+				# gap_length_c = 0
+				# if not chr_gap_c or not chr_gap_c.has_key(chr):
+				# 	del_meta  = del_meta + "Yes\tNo\tYes"
+				# else:
+					# if smd_n: #small deletion
+					# 	for (gap_c_start,gap_c_end) in chr_gap_c[chr]:
+					# 		if gap_c_start <= brkpt and gap_c_end >= brkpt_end:
+					# 			flag_gap_c = 1
+					# 			break
+					# 		elif (gap_c_start >= brkpt and gap_c_start <=brkpt_end) or (gap_c_end >=brkpt and gap_c_end <= brkpt_end):
+					# 			#if float((min(gap_c_end,brkpt_end)-max(gap_c_start,brkpt))/float(brkpt_end-brkpt)) >= 0.5:
+					# 			flag_gap_c = 1
+					# 			break
+					# 	if flag_gap_c == 1:
+					# 		del_meta = del_meta + "Yes\tMaybe\tMaybe"
+					# 	else:
+					# 		del_meta = del_meta + "Yes\tNo\tYes"
+					# else: # large deletion
+					# 	#for (start_c,end_c) in chr_gap_c[chr]:
+					# 	for (gap_c_start,gap_c_end) in chr_gap_c[chr]:
+					# 		if gap_c_start <= brkpt and gap_c_end >= brkpt_end:
+					# 			flag_gap_c = 1
+					# 			break
+					# 		elif (gap_c_start >= brkpt and gap_c_start <=brkpt_end) or (gap_c_end >=brkpt and gap_c_end<=brkpt_end):
+					# 			#if float((min(end_c,brkpt_end)-max(start_c,brkpt))/float(brkpt_end-brkpt)) >= (1 - orate):
+					# 			gap_length_c = gap_length_c + (min(gap_c_end,brkpt_end)-max(gap_c_start,brkpt))
+					# 	if flag_gap_c == 1 or float(gap_length_c/float(brkpt_end-brkpt)) >= orate:
+					# 		del_meta = del_meta + "Yes\tMaybe\tMaybe"
+					# 	elif float(gap_length_c/float(brkpt_end-brkpt)) < float(1- orate): # 90% gap is not overlap with deletion in mutant 
+					# 		del_meta = del_meta + "Yes\tNo\tYes"
+					# 	else:
+					# 		continue
+					
+
+			if deletions.has_key((chr,brkpt)):
+				#print "Warniing! Two big deletions 2 at the same locations:"+ chr+"-"+str(brkpt)
+				continue
+			else:
+				deletions[(chr,brkpt)] = del_meta
+
+							
+					
+			
 FileOUT = open(ofile,'w') or die ("can not open file")
 
 #FileFiltOUT = open(delFileFiltOUT,'w')
 
-FileOUT.write('Del#\tchr\tstart_position\tend_position\tdeletionLength\tbreakpoint_pos\tsupportRead\tdel_mutant\tdel_control\tHomo_Unique\n')
+#FileOUT.write('Del#\tchr\tstart_position\tend_position\tdeletionLength\tbreakpoint_pos\tsupportRead\tdel_mutant\tdel_control\tHomo_Unique\n')
+FileOUT.write('DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#\tGapStarts_position\tGapEnd_position\tDel_mutant\tDel_control\tHomo_Unique\n')
+#DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#
 #FileFiltOUT.write('chr\tstart_position\tend_position\tdeletionLength\tfreq\n')
-Del_num = 1;
-for (chr,start,end) in sorted(chr_sig):
-	delsize = end-start
-	#print "the biggest dels in bcf"+str(del_bcf_max)
-	if delsize > del_bcf_max:
-		flag = 0
-		flag_c = 0
-		if not chr_infodel_m:
-			FileOUT.write(str(Del_num)+chr+"\t"+str(start)+"\t"+str(end)+"\t"+str((end-start))+"\t-\t-\t-\t-\t-\n")
-			
-		if not chr_infodel_m.has_key(chr):
-			continue
-		for (brkpt,sprd) in chr_infodel_m[chr]:
-			if abs(start-brkpt)<=100:
-				flag = 1
-				break
-		if not chr_infodel_c or not chr_infodel_c.has_key(chr):
-			if flag ==1:
-				FileOUT.write(str(Del_num)+"\t"+chr+"\t"+str(start)+"\t"+str(end)+"\t"+str((end-start))+"\t"+str(brkpt)+"\t"+sprd+"\tYes\tNo\tYes\n")
-				Del_num = Del_num + 1
-			continue
-		for (brkpt_c,sprd_c) in chr_infodel_c[chr]:
-			if abs(start-brkpt_c)<=50:
-				flag_c = 1
-		if flag == 1:
-			FileOUT.write(str(Del_num)+"\t"+chr+"\t"+str(start)+"\t"+str(end)+"\t"+str((end-start))+"\t"+str(brkpt)+"\t"+sprd+"\tYes\t")
+Del_num = 1;			
+for (chr,brkpt) in sorted(deletions):
+	if allHomo == 0:
+		unique = deletions[(chr,brkpt)].split("\t")[-1]
+		if unique == "Yes":
+			FileOUT.write(str(Del_num)+"\t"+chr+"\t"+str(brkpt)+"\t"+deletions[(chr,brkpt)]+"\n")
 			Del_num = Del_num + 1
-			if flag_c == 1:
-				FileOUT.write("Yes\tNo\n")
-			else:
-				FileOUT.write("No\tYes\n")
-		#FileOUT.write(chr+"\t"+str(start)+"\t"+str(end)+"\t"+str((end-start))+"\t"+str(chr_sig[(chr,start,end)])+"\n")
 	else:
-		flag = 0
-		if not chr_filter.has_key(chr):
-			continue
-		for (st, ed) in chr_filter[chr]:
-			if (start >=st and start <=ed) or (end >=st and end <=ed):
-				flag = 1
-				break
-		if flag == 1:
-			FileOUT.write(str(Del_num)+"\t"+chr+"\t"+str(start)+"\t"+str(end)+"\t"+str((end-start))+"\t-\t-\tYes\tNO\tYes\n")
-			Del_num = Del_num + 1
-		else:
-			continue
-				
-				
+		FileOUT.write(str(Del_num)+"\t"+chr+"\t"+str(brkpt)+"\t"+deletions[(chr,brkpt)]+"\n")
+		Del_num = Del_num + 1
+
 			
+			
+#DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#\tGapStartstart_position\tGapEndend_position\tDel_mutant\tDel_control\tHomo_Unique
+				
 
 FileOUT.close()
 
