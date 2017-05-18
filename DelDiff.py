@@ -229,7 +229,7 @@ def read_more_File(files, type):
 # 	return chr_filter
 
 
-def readInfoDel(files,minCRR):
+def readInfoDel(files,minCRR,minSMD,type):
 	chr_infodel = {}
 	for f in files:
 		file = os.path.splitext(f)[0] + ".bed"
@@ -243,14 +243,24 @@ def readInfoDel(files,minCRR):
 			clr_n = data[5].split(";")[0].split("=")[1]
 			ccr_n = data[5].split(";")[1].split("=")[1]
 			smd_n = data[5].split(";")[2].split("=")[1]
-			if int(clr_n) == 0 and int(smd_n) == 0 and int(ccr_n) <= minCRR:          ####################cutoff to filter out inconfident deletions
-				continue
-			if chr_infodel.has_key(data[1]):
-				#print data[1]+"---"+ data[2]+"------"+data[3]
-				chr_infodel[data[1]].append((int(float(data[2].replace(",",""))),int(float(data[3].replace(",",""))),delInfo))
-				
-			else:
-				chr_infodel[data[1]] = [(int(float(data[2].replace(",",""))),int(float(data[3].replace(",",""))),delInfo)]
+			if type == 'c':
+				if chr_infodel.has_key(data[1]):
+					#print data[1]+"---"+ data[2]+"------"+data[3]
+					chr_infodel[data[1]].append((int(float(data[2].replace(",",""))),int(float(data[3].replace(",",""))),delInfo))
+					
+				else:
+					chr_infodel[data[1]] = [(int(float(data[2].replace(",",""))),int(float(data[3].replace(",",""))),delInfo)]
+			elif type == 'm'
+				if int(clr_n) == 0 and int(smd_n) == 0 and int(ccr_n) < minCRR:          ####################cutoff to filter out inconfident deletions
+					continue
+				if int(smd_n) != 0 and (int(clr_n)+int(smd_n)) < minSMD:
+					continue
+				if chr_infodel.has_key(data[1]):
+					#print data[1]+"---"+ data[2]+"------"+data[3]
+					chr_infodel[data[1]].append((int(float(data[2].replace(",",""))),int(float(data[3].replace(",",""))),delInfo))
+					
+				else:
+					chr_infodel[data[1]] = [(int(float(data[2].replace(",",""))),int(float(data[3].replace(",",""))),delInfo)]
 	return chr_infodel 
 		
 
@@ -280,6 +290,7 @@ parser.add_argument('-o', action='store', dest='ofile', help="the output file na
 parser.add_argument('-r', action='store', default='0.9', type=float, dest='orate', help="gap overlapping rates")
 parser.add_argument('-d', action='store', default='20', type=int, dest='minDiff', help="the minimal distance between the breakpoint and the start position of gap")
 parser.add_argument('-b', action='store', default='3', type=int, dest='minCRR', help="the minimal crossed reads when there is no clipped reads [default:3]")
+parser.add_argument('-s', action='store', default='2', type=int, dest='minSMD', help="the minimal small deletion reads [default:2]")
 parser.add_argument('-a', action='store', default='0', type=int, dest='allHomo', help="print all homo deletions in mutant including the deletions exist in control sample")
 args = parser.parse_args()
 
@@ -290,6 +301,7 @@ ofile = args.ofile
 orate = args.orate #overlapping between control gap and the mutant inforamtive deletion
 minDiff = args.minDiff #the minimal distance between the start position of informative deletion and the gap in the mutant.
 minCRR = args.minCRR # if there is no clipped read, the minimal number of Crossed reads
+minSMD = args.minSMD
 allHomo = args.allHomo
 minDiff_rep = 5 # the minimal distance difference to distinguish the informative deletion and small deletions
 
@@ -331,8 +343,8 @@ elif len(cfile) == 1 and len(mfile) == 1:
 # 	chr_gap_c = read_more_File(cfile)  #find the merged gap regions
 # 	chr_gap_m = read_more_File(mfile)  #find the overlapping gap regions
 	
-chr_infodel_c = readInfoDel(cfile,minCRR)
-chr_infodel_m = readInfoDel(mfile,minCRR)
+chr_infodel_c = readInfoDel(cfile,minCRR,minSMD,'c')
+chr_infodel_m = readInfoDel(mfile,minCRR,minSMD,'m')
 
 # sfile_ctrl_del = sfile+".ctrl.del"
 # sfile_mut_del = sfile+".mut.del"

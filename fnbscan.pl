@@ -2,6 +2,7 @@
 ######## use samtools old version
 use warnings; use strict;
 use Getopt::Long;
+use FindBin;
 use Time::localtime;
 use File::Basename;
 
@@ -19,6 +20,7 @@ my $usage = "USAGE:
 	-r the overlapping rate between gaps and informative deletion at the same genomic regions [default:0.9]
 	-d the minimal distance between the breakpoint of informative reads and the start postion of gap [default:20]
 	-b the minimal crossed reads when there is no clipped reads [default:3]
+	-s the minimal small deletion reads [default:2]
 
 	eg: perl fnbscan.pl -n fnb -c fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -f Mtruncatula_285_Mt4.0v1.gene.gff3
 	eg: perl fnbscan.pl -n 20x -c 20x/20x.mt4_sim20x1.bedg -m 20x/20x.mt4_mut300_sim20x1.bedg -o 20x/alldeletion_20x.bed
@@ -39,6 +41,7 @@ my $help = '';
 my $orate = 0.9;
 my $minDiff = 20;
 my $minCRR = 3;
+my $minSMD = 2;
 my $allHomo = 0;
 my $cmd;
 
@@ -51,6 +54,7 @@ GetOptions(
 	'-r=f' =>\$orate,
 	'-d=i' =>\$minDiff,
 	'-b=i' =>\$minCRR,
+	'-s=i' =>\$minSMD,
 	'-a=i' =>\$allHomo,
 	'-o=s' =>\$outfile,
 	'-h' => \$help
@@ -73,7 +77,7 @@ my $outfilebase = basename $outfile;
 my $cfiles = join(" ",@cfile);
 my $mfiles = join(" ",@mfile);
 #$cmd = "python DelDiff.py -c $cfiles -m $mfiles -f $result_dirc/$proj.$filebase.unique.vcf.del -r $orate -d $minDiff -b $$minCRR -o $outfile ";
-$cmd = "python $dir/DelDiff.py -c $cfiles -m $mfiles -f $result_dirc/$proj.$filebase -r $orate -d $minDiff -b $minCRR -a $allHomo -o $outfile ";
+$cmd = "python $dir/DelDiff.py -c $cfiles -m $mfiles -f $result_dirc/$proj.$filebase -r $orate -d $minDiff -b $minCRR -s $minSMD -a $allHomo -o $outfile ";
 process_cmd($cmd);
 
 
