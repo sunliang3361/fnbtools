@@ -271,9 +271,6 @@ install_circos() {
     sudo tar xvfz circos-${requiredCircosVersion}.tgz
     sudo ln -s circos-${requiredCircosVersion} current
 
-    echo 'export PATH=/usr/local/circos/current/bin:$PATH' >> ~/.bashrc 
-    . ~/.bashrc
-
     perl -MCPAN -e 'install Clone'
     perl -MCPAN -e 'install Config::General'
     perl -MCPAN -e 'install Digest::MD5'
@@ -318,7 +315,7 @@ install_fnb_main() {
 
     cd $downloadDir
     sudo cp circosvis.py /usr/local/bin/circosvis
-    sudo chmod 755 /usr/local/bin/fnbscircosviscan
+    sudo chmod 755 /usr/local/bin/circosvis
     printf "\ncircosvis copied!\n"
 
     cd $downloadDir
@@ -332,6 +329,9 @@ install_fnb_main() {
     sudo rm /usr/local/fnbtools/fnbtools.tar.gz
 
     printf "\nFNBTools dependencies copied!\n"
+
+    echo 'export PATH=/usr/local/circos/current/bin:$PATH' >> ~/.bashrc 
+    . ~/.bashrc
 }
 
 clean() {
