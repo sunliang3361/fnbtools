@@ -115,65 +115,65 @@ install_system_prerequisites() {
                 
         if [ "$needInstallGcc" = 1 ]; then
             if [ "$useAptGet" = 0 ]; then
-                sudo apt-get install gcc
+                sudo apt-get -y install gcc
             fi
 
             if [ "$useYum" = 0 ]; then
-                sudo yum install gcc
+                sudo yum -y install gcc
             fi
         fi
 
         if [ "$needInstallGPlusPlus" = 1 ]; then
             if [ "$useAptGet" = 0 ]; then
-                sudo apt-get install g++
+                sudo apt-get -y install g++
             fi
 
             if [ "$useYum" = 0 ]; then
-                sudo yum install gcc-c++
+                sudo yum -y install gcc-c++
             fi
         fi
 
         if [ "$needInstallMake" = 1 ]; then
             if [ "$useAptGet" = 0 ]; then
-                sudo apt-get install make
+                sudo apt-get -y install make
             fi
 
             if [ "$useYum" = 0 ]; then
-                sudo yum install make
+                sudo yum -y install make
             fi
         fi
 
         if [ "$needInstallLibncurses" = 1 ]; then
             if [ "$useAptGet" = 0 ]; then
-                sudo apt-get install libncurses5-dev
-                sudo apt-get install ncurses-devel
+                sudo apt-get -y install libncurses5-dev
+                sudo apt-get -y install ncurses-devel
             fi
 
             if [ "$useYum" = 0 ]; then
-                sudo yum install libncurses5-dev
-                sudo yum install ncurses-devel
+                sudo yum -y install libncurses5-dev
+                sudo yum -y install ncurses-devel
             fi
         fi
 
         if [ "$needInstallZLib" = 1 ]; then
             if [ "$useAptGet" = 0 ]; then
-                sudo apt-get install zlib1g-dev
-                sudo apt-get install zlib-devel
+                sudo apt-get -y install zlib1g-dev
+                sudo apt-get -y install zlib-devel
             fi
 
             if [ "$useYum" = 0 ]; then
-                sudo yum install zlib1g-dev
-                sudo yum install zlib-devel
+                sudo yum -y install zlib1g-dev
+                sudo yum -y install zlib-devel
             fi
         fi
 
         if [ "$needInstallCPan" = 1 ]; then
             if [ "$useAptGet" = 0 ]; then
-                sudo apt-get install perl-CPAN
+                sudo apt-get -y install perl-CPAN
             fi
 
             if [ "$useYum" = 0 ]; then
-                sudo yum install perl-CPAN
+                sudo yum -y install perl-CPAN
             fi
         fi
     fi
@@ -298,6 +298,8 @@ install_circos() {
     fi
     perl -MCPAN -e 'install GD::Polyline'
 
+    echo 'export PATH=/usr/local/circos/current/bin:$PATH' >> ~/.bashrc 
+
     printf "\nCircos successfully installed.\n"
 }
 
@@ -329,9 +331,6 @@ install_fnb_main() {
     sudo rm /usr/local/fnbtools/fnbtools.tar.gz
 
     printf "\nFNBTools dependencies copied!\n"
-
-    echo 'export PATH=/usr/local/circos/current/bin:$PATH' >> ~/.bashrc 
-    . ~/.bashrc
 }
 
 clean() {
@@ -353,8 +352,6 @@ install_prerequisites() {
     fi
 
     install_circos
-    install_fnb_main
-    printf "\n\nFNBTools successfully installed!\n\n"
 
     clean
 }
@@ -362,3 +359,5 @@ install_prerequisites() {
 # Main installation sequence
 check_installed_tools
 install_prerequisites
+install_fnb_main
+printf "\n\nFNBTools successfully installed!\n\n"
