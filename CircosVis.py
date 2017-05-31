@@ -17,11 +17,10 @@ Updated and maintained by Liang Sun since Oct 2016
 CircosVis visualize small variance and large deletions
 
 usage:
-	VarDiff [options] -c <control1[,control2,...]> -m <mutant1[,mutant2,...]> -o <output file>
+	CircosVis [options] -c <control1[,control2,...]> -m <mutant1[,mutant2,...]> -o <output file>
 	
 example:
-	python CircosVis.py -s result/AF_unique.txt  -l result/fnb_big_deletion_annot.txt -o myfile.png
-	python CircosVis.py -s result/AF_unique_S2.txt  -l result/fnb_big_deletion_S2_annot.txt -o myfile.png
+	python CircosVis.py  -l fnb/fnb.mt4_chr1_alldeletion_20x_annot.bed -o fnb_circos.png
 """
 
 import sys
@@ -29,59 +28,7 @@ import os
 import argparse
 import time
 
-# class VarInfo:
-#     def __init__(self):
-#         self.chr = ""
-#         self.start = int
-#         self.af = []
-#         self.af_ave = float
-#         
-#     def averageAF():
-#         return sum(self.af)/len(self.af)
 
-#read file
-def processSmallVar(sfile,wsize):
-    chr_win = {} #chr_win[(chr,st,st+wsize)] = [AF]
-    #del_hom = {} #del_hom[(chr,st,st+wsize)] = AF
-    chr = []
-    st = 0
-    FileIN = open(sfile,"rU")
-    FileIN.readline()
-    for line in FileIN:
-        data = line.strip().split("\t")
-        if 'scaffold' in data[0]:
-            continue
-        if data[0] in chr:
-            if int(data[1]) <= (st + wsize):
-                
-                if chr_win.has_key((data[0],st,(st + wsize))):
-                    chr_win[(data[0],st,(st + wsize))].append(float(data[5]))
-                else: #not nessariry
-                    chr_win[(data[0],st,(st + wsize))] = [float(data[5])]
-            else:
-                st = st + wsize
-                chr_win[(data[0],st,(st+wsize))] = [float(data[5])]
-        else:
-            chr.append(data[0])
-            st = 0
-            chr_win[(data[0],st,(st+wsize))] = [float(data[5])]
-                
-    FileIN.close()
-    # check whether too much data to show in circos
-    if len(chr_win) > 25000:
-        exit("Error message: too many data to show in circos, you need to increase the window size parameter!")
-
-    FileOUT = open('vis/VarTrack.txt','w')
-    for chr,start,end in sorted(chr_win):
-        af_ave = sum(chr_win[(chr,start,end)])/len(chr_win[(chr,start,end)])
-        FileOUT.write(chr+"\t"+str(start)+"\t"+str(end)+"\t"+str(af_ave)+"\n")
-    FileOUT.close()
-    
-    # FileOUT1 = open('vis/Del0Track.txt','w')
-    # for chr,start,end in sorted(chr_win):
-    #     af_ave = sum(chr_win[(chr,start,end)])/len(chr_win[(chr,start,end)])
-    #     FileOUT.write(chr+"\t"+str(start)+"\t"+str(end)+"\t"+str(af_ave)+"\n")
-    # FileOUT1.close()
         
 def pickDeletionSize(count,lfile,minLen,maxLen):
     #minLen = 100
@@ -92,7 +39,7 @@ def pickDeletionSize(count,lfile,minLen,maxLen):
         count = 0
         for line in FileIN2:
             data = line.strip().split("\t")
-            if int(data[3])>=minLen and int(data[3])<=maxLen:
+            if int(data[4])>=minLen and int(data[4])<=maxLen:
                 count = count + 1
         FileIN2.close()
     return minLen
@@ -104,58 +51,67 @@ def writeDelTrackFile(trackfile,lfile,minLen,maxLen):
     FileIN.readline()
     for line in FileIN:
         data = line.strip().split("\t")
-        if 'scaffold' in data[0]:
+        if 'scaffold' in data[1]:
             continue
-        if int(data[3]) < minLen:
+        if int(data[4]) < minLen:
             continue
-        if int(data[3]) > minLen and int(data[3]) < maxLen:
-            if data[4] == "low":
-                FileOUT.write(data[0]+"\t"+data[1]+"\t"+data[2]+"\t"+data[3]+"\t"+"fill_color=blue"+"\n")
-            elif data[4] == "high":
-                FileOUT.write(data[0]+"\t"+data[1]+"\t"+data[2]+"\t"+data[3]+"\t"+"fill_color=red" +"\n")
+        if int(data[4]) > minLen and int(data[4]) < maxLen:
+            FileOUT.write(data[1]+"\t"+data[2]+"\t"+data[3]+"\t"+data[4]+"\n")
+
                 
     FileIN.close()
     FileOUT.close()
-def writeDelTextFile(trackfile,lfile,maxLen):
+def writeDelTextFile(trackfile,lfile,minLen,maxLen):
     print "*****Write text track to circos"
     FileOUT = open(trackfile,"w")
     FileIN = open(lfile,"rU")
     FileIN.readline()
     for line in FileIN:
         data = line.strip().split("\t")
-        if 'scaffold' in data[0]:
+        if 'scaffold' in data[1]:
             continue
-        if int(data[3]) < maxLen or data[5] == "[]":
-            continue
-        else:
-            info = data[5].translate(None,"'[]").split(",")
+        if minLen < int(data[4]) <= maxLen and data[11] != "[]":
+            info = data[11].translate(None,"'[]").split(",")
             for id in info:
-                FileOUT.write(data[0]+"\t"+data[1]+"\t"+data[2]+"\t"+id+"\n")
+                FileOUT.write(data[1]+"\t"+data[2]+"\t"+data[3]+"\t"+id+"\n")
     FileIN.close()
     FileOUT.close()    
     
-def processLargeVar(lfile,maxLen):
+def processDel(lfile):
     FileIN1 = open(lfile,"rU")
     #count = sum(1 for line in FileIN1)
     FileIN1.readline()
+    count1 = 0
     count100 = 0
     count1000 = 0
     for line in FileIN1:
         data = line.strip().split("\t")
-        if int(data[3]) < maxLen:
+        if int(data[3]) < 100:
+            count1 = count1 + 1 
+        elif int(data[3]) < 1000:
             count100 = count100 + 1
         else:
             count1000 = count1000 + 1
     FileIN1.close()
     # find the minimum length of deletion and wirte the deletion track files
-    minLen100 =  pickDeletionSize(count100,lfile,100,maxLen)
-    writeDelTrackFile("vis/DelTrack100.txt",lfile,minLen100,maxLen)
     
-    minLen1000 =  pickDeletionSize(count1000,lfile,maxLen,10000000)
-    writeDelTrackFile("vis/DelTrack1000.txt",lfile,minLen1000,10000000)
-    
+    # minLen1 =  pickDeletionSize(count100,lfile,1,maxLen)
+    # writeDelTrackFile("vis/DelTrack1.txt",lfile,minLen100,maxLen)
+
+    minLen1 =  pickDeletionSize(count100,lfile,1,100)
+    writeDelTrackFile("vis/DelTrack1.txt",lfile,minLen1,100)
     #write text file
-    writeDelTextFile("vis/DelTrack1000_text.txt",lfile,maxLen)
+    writeDelTextFile("vis/DelTrack1_text.txt",lfile,minLen1,100)
+    
+    minLen100 =  pickDeletionSize(count100,lfile,100,1000)
+    writeDelTrackFile("vis/DelTrack100.txt",lfile,minLen100,1000)
+    #write text file
+    writeDelTextFile("vis/DelTrack100_text.txt",lfile,minLen100,1000)
+    
+    minLen1000 =  pickDeletionSize(count1000,lfile,1000,1500000)
+    writeDelTrackFile("vis/DelTrack1000.txt",lfile,minLen1000,1500000)
+    #write text file
+    writeDelTextFile("vis/DelTrack1000_text.txt",lfile,minLen1000,1500000)
     
 
     
@@ -172,42 +128,85 @@ def createConf(ofile): #create in vis folder
         
         
         <plots>
-
+        #text for dels from 1 to 100bp
+        <plot>
+        type       = text
+        color      = 160, 0, 0
+        label_font = condensed
         
+        file = vis/DelTrack1_text.txt
+        orientation = in
+        
+                r1   = 0.99r
+                r0   = 0.80r
+        
+        label_size = 12p
+        
+        show_links     = yes
+        link_dims      = 2p,2p,4p,2p,2p
+        link_thickness = 2p
+        link_color     = red
+        
+        label_snuggle         = yes
+        max_snuggle_distance  = 1r
+        snuggle_tolerance     = 0.25r
+        snuggle_sampling      = 2
+        
+        
+        </plot>
+        #########histgram for dels from 1 to 100bp
         <plot>
         # The type sets the format of the track.
         
         type = histogram
         thickness = 2
-        
-        file = vis/VarTrack.txt
+        file = vis/DelTrack1.txt
         extend_bin = yes
-        fill_color = vdgrey
-        color      = black
-        
-        r1   = 0.95r
-        r0   = 0.80r
-        
-        <rules>
-        
-        <rule>
-        condition = var(value) == 1.0
-        color = red
-        </rule>
-
-        </rules>
+        fill_color = 0, 0, 254
+        color      = grey
+        orientation = in
+        r1   = 0.80r
+        r0   = 0.65r
         
         # Histograms can have both a fill and outline. The default outline is 1px thick black. 
-        
-        
         <axes>
         <axis>
-        spacing   = 0.1r
+        spacing   = 0.4r
         color     = lgrey
-        thickness = 2
+        thickness = 1
         </axis>
         </axes>
         </plot>
+        
+
+        ######## text for dels from 100 to 1000bp
+        <plot>
+        type       = text
+        color      = 0,150,0
+        label_font = condensed
+        
+        file = vis/DelTrack100_text.txt
+        orientation = in
+        
+                r1   = 0.65r
+                r0   = 0.55r
+        
+        label_size = 12p
+        
+        show_links     = yes
+        link_dims      = 2p,2p,4p,2p,2p
+        link_thickness = 2p
+        link_color     = red
+        
+        label_snuggle         = yes
+        max_snuggle_distance  = 1r
+        snuggle_tolerance     = 0.25r
+        snuggle_sampling      = 2
+        
+        
+        </plot>
+        
+        #########histgram for dels from 100 to 1000bp
         
         <plot>
         # The type sets the format of the track.
@@ -215,25 +214,51 @@ def createConf(ofile): #create in vis folder
         type = histogram
         thickness = 2
         file = vis/DelTrack100.txt
-        #extend_bin = yes
-        fill_color = vdgrey
+        extend_bin = yes
+        fill_color = 0, 200, 0
         color      = grey
-        
-        r1   = 0.75r
-        r0   = 0.60r
-        
-
-        
+        orientation = in
+        r1   = 0.55r
+        r0   = 0.40r
         # Histograms can have both a fill and outline. The default outline is 1px thick black. 
         <axes>
         <axis>
-        spacing   = 0.1r
+        spacing   = 0.4r
         color     = lgrey
-        thickness = 2
+        thickness = 1
         </axis>
         </axes>
         </plot>
+
+
+        ######### text for dels from 1000 to 1,500,000bp
+        <plot>
+        type       = text
+        color      = 0,0,190
+        label_font = condensed
         
+        file = vis/DelTrack1000_text.txt
+        orientation = in
+        
+                r1   = 0.40r
+                r0   = 0.30r
+        
+        label_size = 12p
+        
+        show_links     = yes
+        link_dims      = 2p,2p,4p,2p,2p
+        link_thickness = 2p
+        link_color     = red
+        
+        label_snuggle         = yes
+        max_snuggle_distance  = 1r
+        snuggle_tolerance     = 0.25r
+        snuggle_sampling      = 2
+        
+        
+        </plot>
+        
+        #########histgram for dels from 1000 to 1,500,000bp
         <plot>
         # The type sets the format of the track.
         
@@ -241,52 +266,24 @@ def createConf(ofile): #create in vis folder
         thickness = 2
         file = vis/DelTrack1000.txt
         
-        #extend_bin = yes
-        fill_color = vdgrey
+        extend_bin = yes
+        fill_color = 230,0,0
         color      = grey
-        
-        r1   = 0.55r
-        r0   = 0.40r
-        
-
-        
+        orientation = in
+        r1   = 0.30r
+        r0   = 0.15r
         # Histograms can have both a fill and outline. The default outline is 1px thick black. 
         <axes>
         <axis>
-        spacing   = 0.1r
+        spacing   = 0.4r
         color     = lgrey
-        thickness = 2
+        thickness = 1
         </axis>
         </axes>
         </plot>
 
-
-<plot>
-type       = text
-color      = black
-label_font = condensed
-
-file = vis/DelTrack1000_text.txt
-orientation = in
-
-        r1   = 0.39r
-        r0   = 0.20r
-
-label_size = 12p
-
-show_links     = yes
-link_dims      = 2p,2p,4p,2p,2p
-link_thickness = 2p
-link_color     = red
-
-label_snuggle         = yes
-max_snuggle_distance  = 1r
-snuggle_tolerance     = 0.25r
-snuggle_sampling      = 2
-
-
-</plot>
-</plots>
+        
+        </plots>
 
 
         
@@ -334,15 +331,15 @@ ofile = ""
 ############################## process command line arguments #############################
 parser = argparse.ArgumentParser(description="VarAnnot annotate small variants (snp&small indel) and big deletions")
 parser.add_argument('--version', action='version', version='%(prog)s 1.0')
-parser.add_argument('-s', action='store', dest='sfile', help="small variance file")
-parser.add_argument('-w', action='store', default= 50000, dest='wsize', help="windowsize for small variance file")
+#parser.add_argument('-s', action='store', dest='sfile', help="small variance file")
+#parser.add_argument('-w', action='store', default= 50000, dest='wsize', help="windowsize for small variance file")
 parser.add_argument('-l', action='store', dest='lfile', help="annoated large deletion file")
 parser.add_argument('-o', action='store', dest='ofile', help="the output file name for circos image file")
 
 args = parser.parse_args()
 
-sfile = args.sfile
-wsize = args.wsize
+# sfile = args.sfile
+# wsize = args.wsize
 lfile = args.lfile
 ofile = args.ofile
 
@@ -352,8 +349,8 @@ if len(sys.argv) == 1:
 
 ############################# read AF files #############################
 else :
-    processSmallVar(sfile,wsize)
-    processLargeVar(lfile,1000)
+    #processSmallVar(sfile,wsize)
+    processDel(lfile)
     createConf(ofile)
     os.system("circos")
 

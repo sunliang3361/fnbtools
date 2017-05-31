@@ -266,7 +266,7 @@ while(<SAM>){
 					$d = $clr_pos2-$clr_pos- $m1;
 				}
 				$clr_cigar_new = $m1."M".$d."D".$m2."M";
-				print SAMm "$clr_id\t$clr_flag\t$clr_chr\t$clr_pos\t60\t$clr_cigar_new\t=\t$clr_rpos\t500\t$seq_new\t$qual_new\n";
+				print SAMm "$clr_id\t$clr_flag\t$clr_chr\t$clr_pos\t60\t$clr_cigar_new\t=\t$clr_rpos\t$lib_size\t$seq_new\t$qual_new\n";
 				#print informative reads
 				#print LOC "$clr_id\t$clr_chr\t$clr_loc\tCLR\n";
 				my $clr_loc_end = $clr_loc + $d;
@@ -359,7 +359,7 @@ while(<SAM>){
 					$d = $clr_pos - $clr_pos2 - $m1;
 				}
 				$clr_cigar_new = $m1."M".$d."D".$m2."M";
-				print SAMm "$clr_id2\t$clr_flag2\t$clr_chr2\t$clr_pos2\t60\t$clr_cigar_new\t=\t$clr_rpos2\t500\t$seq_new\t$qual_new\n";
+				print SAMm "$clr_id2\t$clr_flag2\t$clr_chr2\t$clr_pos2\t60\t$clr_cigar_new\t=\t$clr_rpos2\t$lib_size\t$seq_new\t$qual_new\n";
 				#print LOC "$clr_id\t$clr_chr\t$clr_loc\tCLR\n";
 				
 				my $clr_loc_end2 = $clr_loc2 + $d;
@@ -434,7 +434,7 @@ while(<DEL>){
 		$win = $window;
 	}elsif($typ=~/CLR/){
 		#clipped reads
-		$win = 50;
+		$win = 20;
 	}elsif($typ=~/SMD/){
 		$win = 5;
 	}

@@ -250,7 +250,7 @@ def readInfoDel(files,minCRR,minSMD,type):
 					
 				else:
 					chr_infodel[data[1]] = [(int(float(data[2].replace(",",""))),int(float(data[3].replace(",",""))),delInfo)]
-			elif type == 'm'
+			elif type == 'm':
 				if int(clr_n) == 0 and int(smd_n) == 0 and int(ccr_n) < minCRR:          ####################cutoff to filter out inconfident deletions
 					continue
 				if int(smd_n) != 0 and (int(clr_n)+int(smd_n)) < minSMD:
@@ -362,6 +362,7 @@ chr_infodel_m = readInfoDel(mfile,minCRR,minSMD,'m')
 #print chr_gap_c['chr2']
 
 deletions = {}
+deletions_fix = {}
 
 for chr in chr_infodel_m:
 	for (brkpt,brkpt_end,delInfo) in chr_infodel_m[chr]:
@@ -377,7 +378,7 @@ for chr in chr_infodel_m:
 		if not chr_gap_m or not chr_gap_m.has_key(chr):
 			continue
 		#check mutant gap file and decide whether it's homo
-		if smd_n > clr_n : #small deletion
+		if smd_n >= clr_n and smd_n > 0 : #small deletion
 			for (gap_m_start,gap_m_end) in chr_gap_m[chr]:
 				if abs(gap_m_start-brkpt) <= minDiff_rep: #3bp difference
 					gap_info = str(gap_m_start)+"\t"+str(gap_m_end)
@@ -411,7 +412,7 @@ for chr in chr_infodel_m:
 			if not chr_infodel_c or not chr_infodel_c.has_key(chr):
 				pass
 			else:
-				if smd_n>= clr_n and clr_n>0:
+				if smd_n>= clr_n and smd_n > 0:
 					for (brkpt_c,brkpt_end_c,delInfo_c) in chr_infodel_c[chr]:
 						if abs(brkpt-brkpt_c) <= minDiff_rep:
 							flag_info_c = 1
@@ -487,20 +488,53 @@ for chr in chr_infodel_m:
 FileOUT = open(ofile,'w') or die ("can not open file")
 
 #FileFiltOUT = open(delFileFiltOUT,'w')
+print ("Remove duplicate deletion!")
+for (chr,brkpt) in deletions:
+	#print "input:"+str((chr,brkpt))
+	
+	brkpt_end = int(deletions[(chr,brkpt)].split("\t")[0])
+	clr_n = int(deletions[(chr,brkpt)].split("\t")[2].split(";")[0].split("=")[1])
+	crr_n = int(deletions[(chr,brkpt)].split("\t")[2].split(";")[1].split("=")[1])
+	smd_n = int(deletions[(chr,brkpt)].split("\t")[2].split(";")[2].split("=")[1])
+	# print "input_end:"+str(brkpt_end)
+	# print "clr_n:"+str(clr_n)
+	# print "smd_n:" + str(smd_n)
+	flag = 0
+	for (chr1,brkpt1) in deletions:
+		if chr1 == chr:
+			brkpt_end1 = int(deletions[(chr1,brkpt1)].split("\t")[0])
+			clr_n1 = int(deletions[(chr1,brkpt1)].split("\t")[2].split(";")[0].split("=")[1])
+			crr_n1 = int(deletions[(chr1,brkpt1)].split("\t")[2].split(";")[1].split("=")[1])
+			smd_n1 = int(deletions[(chr1,brkpt1)].split("\t")[2].split(";")[2].split("=")[1])
+			if (brkpt >=brkpt1 and brkpt <= brkpt_end1) or (brkpt_end >=brkpt1 and brkpt_end <=brkpt_end1) or (brkpt<=brkpt1 and brkpt_end>=brkpt_end1):
+				#print "why:"+str((chr1,brkpt1))+"--"+str(brkpt_end1)
+				if (clr_n+smd_n+crr_n)<(clr_n1 + smd_n1+crr_n1):
+					flag  = 1
+				elif (clr_n+smd_n+crr_n) == (clr_n1 + smd_n1+crr_n1):
+					if (clr_n+smd_n) < (clr_n1 + smd_n1):
+						flag = 1
+		else:
+			continue
+	if flag == 1:
+		continue
+	else:
+		#print "output:"+str((chr,brkpt))
+		deletions_fix[(chr,brkpt)] = deletions[(chr,brkpt)]
+	
 
 #FileOUT.write('Del#\tchr\tstart_position\tend_position\tdeletionLength\tbreakpoint_pos\tsupportRead\tdel_mutant\tdel_control\tHomo_Unique\n')
 FileOUT.write('DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#\tGapStarts_position\tGapEnd_position\tDel_mutant\tDel_control\tHomo_Unique\n')
 #DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#
 #FileFiltOUT.write('chr\tstart_position\tend_position\tdeletionLength\tfreq\n')
 Del_num = 1;			
-for (chr,brkpt) in sorted(deletions):
+for (chr,brkpt) in sorted(deletions_fix):
 	if allHomo == 0:
-		unique = deletions[(chr,brkpt)].split("\t")[-1]
+		unique = deletions_fix[(chr,brkpt)].split("\t")[-1]
 		if unique == "Yes":
-			FileOUT.write(str(Del_num)+"\t"+chr+"\t"+str(brkpt)+"\t"+deletions[(chr,brkpt)]+"\n")
+			FileOUT.write(str(Del_num)+"\t"+chr+"\t"+str(brkpt)+"\t"+deletions_fix[(chr,brkpt)]+"\n")
 			Del_num = Del_num + 1
 	else:
-		FileOUT.write(str(Del_num)+"\t"+chr+"\t"+str(brkpt)+"\t"+deletions[(chr,brkpt)]+"\n")
+		FileOUT.write(str(Del_num)+"\t"+chr+"\t"+str(brkpt)+"\t"+deletions_fix[(chr,brkpt)]+"\n")
 		Del_num = Del_num + 1
 
 			
