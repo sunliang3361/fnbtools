@@ -94,16 +94,12 @@ for my $path (split /:/, $ENV{PATH}){
 		if( -f "$path/bwa" && -x _){
 		$bwa="$path/bwa";		
 	}
-		if( -f "$path/bcftools" && -x _){
-		$bcftools="$path/bcftools";		
-	}
 		if( -f "$path/bedtools" && -x _){
 		$bedtools="$path/bedtools";		
 	}
 }
 die "No Samtools command available\n" unless ( $samtools );
 die "No bwa command available\n" unless ( $bwa );
-die "No bcftools command available\n" unless ( $bcftools );
 die "No bedtools command available\n" unless ( $bedtools );
 
 
@@ -156,8 +152,8 @@ my $findex=0;
 foreach my $rs1 (@rs1_originals){
 
 	my $rs2=$rs2_originals[$findex];
-	my $rs2_file = substr($rs2,0,index($rs2,'.'));
-	my $rs1_file=substr($rs1,0,index($rs1,'.'));
+	my $rs2_file = substr((basename $rs2),0,index((basename $rs2),'.'));
+	my $rs1_file=substr((basename $rs1),0,index((basename $rs1),'.'));
 	print "input1: $rs1, $rs1_file\n";
 	print "input2: $rs2, $rs2_file\n";	
 
