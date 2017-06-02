@@ -24,7 +24,8 @@ Parameters:
 	REQUIRED -n the the name of you project
 
 Example:
-perl fnbalign.pl -n fnb -g mt4_chr1_2Mb.fa -1 mt4_chr1_raw_20x1.fq mt4_chr1_mut_20x1.fq -2 mt4_chr1_raw_20x2.fq mt4_chr1_mut_20x2.fq
+fnbalign  -n fnb -g example/mt4_chr1_2Mb.fa -1 example/mt4_chr1_raw_20x1.fq example/mt4_chr1_mut_20x1.fq -2 example/mt4_chr1_raw_20x2.fq example/mt4_chr1_mut_20x2.fq
+
 
 Output:
 1. BAM file
@@ -52,7 +53,7 @@ Parameters:
 	-h print this help message 
 	
 Example:
-fnbscan -n fnb -c fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -f Mtruncatula_285_Mt4.0v1.gene.gff3
+fnbscan -n fnb -c fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -f example/Mtruncatula_285_Mt4.0v1.gene.gff3
 
 Output:
 1. BED file
@@ -83,8 +84,8 @@ Example:
 	circosvis  -l fnb/fnb.mt4_chr1_alldeletion_20x_annot.bed -o fnb_circos.png
 
 Output:
-The output circos image will be in vis folder with the name parameter 'o' you provided
-If no error message reported, you can find the output circos image in vis folder. Since our sample data (fnb.mt4_chr1_alldeletion_20x_annot.bed) is too small, you cannot see any deletion in the circos images.
+The output circos image will be in 'vis' folder with the name parameter 'o' defined
+Since our sample deletion file from step 2 (fnb.mt4_chr1_alldeletion_20x_annot.bed) is too small, you cannot see any deletions in the circos image.
 Please use file "wen.S1_alldeletion_uniq_annot.bed" to test circosvis program in the example folder.
 
 
