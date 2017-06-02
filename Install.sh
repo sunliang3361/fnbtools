@@ -360,4 +360,4 @@ install_prerequisites() {
 check_installed_tools
 install_prerequisites
 install_fnb_main
-printf "\n\nFNBTools successfully installed!\n\n"
+printf "\n\nFNBTools successfully installed -- Please continue with Step 4 of README\n\n"
