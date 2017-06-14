@@ -4,7 +4,10 @@
 1. Run: `git clone ---` (or download fnbtools.tar.gz from Releases and run `tar -xzvf fnbtools.tar.gz`)
 2. Run: `sudo ./Install.sh`
 3. If prompted with "Would you like to configure as much as possible automatically? [yes]", type **yes** and then press Enter. This will automatically configure Perl's CPAN utility so that additional Perl modules can be installed.
-4. Run: `. ~/.bashrc`
+
+**Optional** - If you would like to enable visualization of the results, continue with steps 4 and 5:
+4. Run: `echo 'export PATH=/usr/local/circos/current/bin:$PATH' >> ~/.bashrc`
+5. Run: `. ~/.bashrc`
 
 ## Install in Docker container
 1. git clone ---
