@@ -271,10 +271,17 @@ install_circos() {
     sudo tar xvfz circos-${requiredCircosVersion}.tgz
     sudo ln -s circos-${requiredCircosVersion} current
 
+    if [ "$useYum" = 0 ]; then
+        sudo yum install -y perl-Module-Build
+    fi
+
+    cpan YAML
+
     perl -MCPAN -e 'install Clone'
     perl -MCPAN -e 'install Config::General'
     perl -MCPAN -e 'install Digest::MD5'
     perl -MCPAN -e 'install File::Spec::Functions'
+    perl -MCPAN -e 'install Bundle::Compress::Zlib'
     perl -MCPAN -e 'install Font::TTF::Font'
     perl -MCPAN -e 'install List::MoreUtils'
     perl -MCPAN -e 'install Math::Bezier'
@@ -295,10 +302,9 @@ install_circos() {
     
     if [ "$useYum" = 0 ]; then
         sudo yum install -y libgd-gd2-perl
+        sudo yum install -y gd gd-devel perl-GD
     fi
     perl -MCPAN -e 'install GD::Polyline'
-
-    echo 'export PATH=/usr/local/circos/current/bin:$PATH' >> ~/.bashrc 
 
     printf "\nCircos successfully installed.\n"
 }
@@ -360,4 +366,4 @@ install_prerequisites() {
 check_installed_tools
 install_prerequisites
 install_fnb_main
-printf "\n\nFNBTools successfully installed -- Please continue with Step 4 of README\n\n"
+printf "\n\nFNBTools successfully installed -- Please continue with Step 5 of the README installation section to enable Circos visualizations of FNBTools outputs.\n\n"
