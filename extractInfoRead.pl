@@ -601,6 +601,7 @@ sub writeClust{
 	my $n = 1;
 	print BED "DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#\n";
 	for my $line (@clust){
+
 		print BED $n."\t".$line."\n";
 		$n++;
 	}

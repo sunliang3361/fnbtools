@@ -10,19 +10,22 @@ use File::Basename;
 my $usage = "USAGE:
 	$0
 	REQUIRED -n the project name
-	REQUIRED -c the control bedg file(s)
-	REQUIRED -m the mutant bedg file(s)
+	REQUIRED -m the mutant bedg file(only one pooled sample allowed)
+	REQUIRED -o output file name containing identified deletions
 
 	OPTIONS:
-	-f input annotation file to annotate deletions     
+	-c the control bedg file(s),used to filter out homo and heter deletion
+	-x the contorl bedg file(s),used to filter out homo deletions
+	-g input annotation file to annotate deletions     
 	-h print this help message
 	-a print all homo deletions in mutant including the deletions exist in control sample [0|1, default:0]
 	-r the overlapping rate between gaps and informative deletion at the same genomic regions [default:0.9]
 	-d the minimal distance between the breakpoint of informative reads and the start postion of gap [default:20]
 	-b the minimal crossed reads when there is no clipped reads [default:3]
 	-s the minimal small deletion reads [default:2]
+	-f the minimal flanking reads up and downstream of deletions [default:1]
 
-	eg: perl fnbscan.pl -n fnb -c fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -f Mtruncatula_285_Mt4.0v1.gene.gff3
+	eg: perl fnbscan.pl -n fnb -c fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g Mtruncatula_285_Mt4.0v1.gene.gff3
 	eg: perl fnbscan.pl -n 20x -c 20x/20x.mt4_sim20x1.bedg -m 20x/20x.mt4_mut300_sim20x1.bedg -o 20x/alldeletion_20x.bed
 	eg: perl fnbscan.pl -n 20x_351 -c 20x_351/20x_351.mt4_sim20x1.bedg -m 20x_351/20x_351.mt4_mut351_sim20x1.bedg -o 20x_351/alldeletion_20x_351.bed
 	eg: perl fnbscan.pl -n 10x_351 -c 10x_351/10x_351.mt4_sim10x1.bedg -m 10x_351/10x_351.mt4_mut351_sim10x1.bedg -o 10x_351/alldeletion_10x_351.bed
@@ -30,10 +33,11 @@ my $usage = "USAGE:
 
 die "$usage\n" if (@ARGV == 0);
 
-my $dir = "/usr/local/fnbtools";
-#my $dir = "$FindBin::Bin";
+#my $dir = "/usr/local/fnbtools";
+my $dir = "$FindBin::Bin";
 my $proj   = "fnb"; 
 my @cfile;
+my @xfile;
 my @mfile;
 my $gff = "";
 my $outfile;
@@ -42,19 +46,22 @@ my $orate = 0.9;
 my $minDiff = 20;
 my $minCRR = 3;
 my $minSMD = 2;
+my $minFR = 1;
 my $allHomo = 0;
 my $cmd;
 
 
 GetOptions(
-    '-c=s@{1,}' => \@cfile,
+    '-c:s@{,}' => \@cfile,
+	'-x:s@{,}' => \@xfile,
 	'-m=s@{1,}'=> \@mfile,
 	'-n=s' =>\$proj,
-	'-f=s' =>\$gff,
+	'-g=s' =>\$gff,
 	'-r=f' =>\$orate,
 	'-d=i' =>\$minDiff,
 	'-b=i' =>\$minCRR,
 	'-s=i' =>\$minSMD,
+	'-f=i' =>\$minFR,
 	'-a=i' =>\$allHomo,
 	'-o=s' =>\$outfile,
 	'-h' => \$help
@@ -74,11 +81,31 @@ my $outfilebase = basename $outfile;
 # process_cmd($cmd);
 
 ##########################Step2: call DelDiff to identify deletions and merge the deletions identified from clipped and cross reads###############
-my $cfiles = join(" ",@cfile);
-my $mfiles = join(" ",@mfile);
-#$cmd = "python DelDiff.py -c $cfiles -m $mfiles -f $result_dirc/$proj.$filebase.unique.vcf.del -r $orate -d $minDiff -b $$minCRR -o $outfile ";
-$cmd = "python $dir/DelDiff.py -c $cfiles -m $mfiles -f $result_dirc/$proj.$filebase -r $orate -d $minDiff -b $minCRR -s $minSMD -a $allHomo -o $outfile ";
-process_cmd($cmd);
+if (!@mfile){
+	print "Your your mutant files do not exist!\n";
+	exit 0;
+}
+
+
+if(@cfile){
+	my $mfiles = join(" ",@mfile);
+	my $cfiles = join(" ",@cfile);
+	$cmd = "python $dir/DelDiff.py -c $cfiles -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -a $allHomo -o $outfile ";
+	process_cmd($cmd);
+}
+elsif(@xfile){
+	my $mfiles = join(" ",@mfile);
+	my $xfiles = join(" ",@xfile);
+	$cmd = "python $dir/DelDiff.py -x $xfiles -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -a $allHomo -o $outfile ";
+	process_cmd($cmd);
+}
+else{
+	my $mfiles = join(" ",@mfile);
+	$cmd = "python $dir/DelDiff.py -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -a $allHomo -o $outfile ";
+	process_cmd($cmd);
+}
+
+
 
 
 ##########################Step3: call VarAnnot to annotate deletions (optional)###############

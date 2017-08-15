@@ -98,7 +98,7 @@ Running Step 1 using the example data set provided with this repository would pr
 
 ### Usage:
 
-`fnbscan -n fnb -c control.bed -m mutant.bed`
+`fnbscan -n fnb -c control.bedg -m mutant.bedg`
 
 ### Parameters:
 
@@ -110,10 +110,28 @@ Running Step 1 using the example data set provided with this repository would pr
 * OPTIONAL:
   * -f input annotation file to annotate deletions     
   * -h print this help message 
-	
+	* -c the control bedg file(s),used to filter out homo and heter deletion
+	* -x the contorl bedg file(s),used to filter out homo deletions
+	* -g input annotation file to annotate deletions     
+	* -h print this help message
+	* -a print all homo deletions in mutant including the deletions exist in control * sample [0|1, default:0]
+	* -r the overlapping rate between gaps and informative deletion at the same * genomic regions [default:0.9]
+	* -d the minimal distance between the breakpoint of informative reads and the * start postion of gap [default:20]
+	* -b the minimal crossed reads when there is no clipped reads [default:3]
+	* -s the minimal small deletion reads [default:2]
+	* -f the minimal flanking reads up and downstream of deletions [default:1]
+
 ### Example:
 
-`fnbscan -n fnb -c fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -f example/Mtruncatula_285_Mt4.0v1.gene.gff3`
+1.	No control sample
+`fnbscan -n fnb -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g example/Mtruncatula_285_Mt4.0v1.gene.gff3`
+
+2.	Filter out all homozygous and heterozygous deletions in control samples
+`fnbscan -n fnb -c fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g example/Mtruncatula_285_Mt4.0v1.gene.gff3`
+
+3.	Filter out only homozygous deletions in control samples
+`fnbscan -n fnb -x fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g example/Mtruncatula_285_Mt4.0v1.gene.gff3`
+
 
 ### Output:
 
@@ -134,7 +152,7 @@ Running Step 2 using the example data set provided with this repository, along w
 * BreakpointStart: Start position of deletions
 * BreakpointEnd: End position of deletions
 * DeletionLength: Deletion length
-* SuppRead#: CLR represent the clipped reads number; CRR represents discordant reads number; SMD represents small deletion reads number 
+* SuppRead#: CLR represent the clipped reads number; CRR represents discordant reads number; SMD represents small deletion reads number; FLR represents the flanking supporting reads of deletions on the left; FRR represents the flanking supporting read number of deletions on the right 
 * GapStarts_position: Start position of gaps	
 * GapEnd_position	: End position of gaps
 * Del_mutant: 'Yes' represents deletions found in mutant samples	

@@ -30,8 +30,8 @@ my $usage = "USAGE:
 
 die "$usage\n" if (@ARGV == 0);
 
-my $dir = "/usr/local/fnbtools";
-#my $dir = "$FindBin::Bin";
+#my $dir = "/usr/local/fnbtools";
+my $dir = "$FindBin::Bin";
 my $genome;
 my $proj   = "fnb";                 
 my @rs1_originals;
@@ -160,7 +160,7 @@ foreach my $rs1 (@rs1_originals){
 	#my $transformtobed_bam ;
 	# if($fast =~ /N/i and $bam == 0){
 	#$cmd = "bwa mem -T 20 -t $cpu_bwa $result_temp/$proj.ref.fa $rs1 $rs2 |tee $result_temp/$proj.$rs1_file._ref.sam  |samtools view -@ $cpu_view -buS -q 30 - | samtools sort -@ $cpu_sort  - -O bam -o $result_temp/$proj.$rs1_file._ref.sort.bam";
-	$cmd = "bwa mem -t $cpu_bwa $result_temp/$proj.ref.fa $rs1 $rs2 > $result_temp/$proj.$rs1_file.ref.sam";
+	$cmd = "bwa mem -T 20 -t $cpu_bwa $result_temp/$proj.ref.fa $rs1 $rs2 > $result_temp/$proj.$rs1_file.ref.sam";
 	process_cmd($cmd);
 	
 	#call extractInfoRead here to extract all informative reads (cross reads and clipped reads) and modify the sam file to get the deletion bar for IGV
@@ -182,41 +182,48 @@ foreach my $rs1 (@rs1_originals){
 	$cmd = "rm $result_dirc/$proj.$rs1_file.fix.sam";
 	#process_cmd($cmd);
 
-	##### Step 2 samtools call variances #####
-	# #samtools mpileup -B -f mt4.fa sorted.bam | bcftools view -bvcg - >var.raw.bcf
+	##### Step 2 add supporting reads for flanking reads left and right by using the bam file with mapping score > 30 #####
+	open(BED,"<$result_dirc/$proj.$rs1_file.bed") or die $!;
+	open(BEDfix,">$result_dirc/$proj.$rs1_file.fix.bed") or die $!;
+	my $flag = 0;
+	while(my $line = <BED>){
+		chomp($line);
+		if($flag == 0){
+			print BEDfix $line."\n";
+			$flag ++;
+			next;
+		}
+		my ($del_n, $chr,$breakpoint,$breakpoint_end,$deletion,$suppRead) = split /\t/, $line;
+		my $fl = $breakpoint - $lib_len/2; #$lib_len/3; #the start position of left flanking region
+		my $fr = $breakpoint_end + $lib_len/2; #$lib_len/3; #the end position of right flanking region
+		#???????????????????????????add flanking reads number here??????????????????????????????????????
+		open my $fl_depth, "samtools depth -r $chr:$fl-$breakpoint $result_temp/$proj.$rs1_file.ref.sort.bam |" or die $!;
+		open my $fr_depth, "samtools depth -r $chr:$breakpoint_end-$fr $result_temp/$proj.$rs1_file.ref.sort.bam |" or die $!;
+		my $fl_n = 0;
+		my $fr_n = 0;
+		
+		while(<$fl_depth>){
+			chomp;
+			my @records = split /\t/,$_;
+			$fl_n = $fl_n + $records[2];
+		}
+		while(<$fr_depth>){
+			chomp;
+			my @records = split /\t/,$_;
+			$fr_n = $fr_n + $records[2];
+		}
+		my $flr = int($fl_n*2/$lib_len);
+		my $frr = int($fr_n*2/$lib_len);
+		# my $flr = int($fl_n/20);
+		# my $frr = int($fr_n/20);
+		print BEDfix $line."FLR=$flr;FRR=$frr\n";
+		close $fl_depth;
+		close $fr_depth;
+	}
+	close(BED);
+	close(BEDfix);
 
-	# $cmd="samtools mpileup -ugf $result_temp/$proj.ref.fa $result_temp/$proj.$rs1_file.ref.sort.bam | bcftools call -vm -o $result_temp/var_${rs1_file}.vcf";
-	# process_cmd($cmd);
-
-	# ##### Calculate AF
-	# open AF, ">$result_dirc/$proj.${rs1_file}.vcf" or die $!;
-	# print AF "#CHROM\tPOS\tID\tREF\tALT\tAF\n";
-	# open (RawVCFFile,"<$result_temp/var_${rs1_file}.vcf");
-	# my @VCFContent =<RawVCFFile>;
-	
-	# chomp(@VCFContent);
-	# foreach my $line (@VCFContent){
-		# if($line =~ m/^#/){
-			# next;
-		# }else{
-			# my @contents=split(/;/,$line);
-			# my @chromInfo = split(/\t/,$contents[0]);
-			# print AF "$chromInfo[0]\t$chromInfo[1]\t$chromInfo[2]\t$chromInfo[3]\t$chromInfo[4]";
-			# my $dp4="DP4=";
-			# my $replace="";
-			# foreach my $content (@contents){
-				# if($content =~ m/^DP4/){
-					# $content =~ s/$dp4/$replace/g;
-					# my @alleles = split(/,/,$content);
-					# my $vaf = ($alleles[2]+$alleles[3])/($alleles[0]+$alleles[1]+$alleles[2]+$alleles[3]);
-					# print AF "\t$vaf\n";					
-				# }
-			# }
-		# }
-	# }
-	 
-	##### Step 3 identify large deletions ---Liang #####
-
+	# get the gap file
 	#$cmd= "genomeCoverageBed -ibam $result_temp/$proj.$rs1_file.ref.sort.bam -bga |";
 	$cmd= "bedtools genomecov -ibam $result_temp/$proj.$rs1_file.ref.sort.bam -bga |";
 	open (OUT, ">$result_dirc/$proj.$rs1_file.bedg") or die ("cannot open bedg file");
@@ -258,7 +265,6 @@ sub process_cmd {
 	return;
 
 }
-
 
 
 sub mytime() {
