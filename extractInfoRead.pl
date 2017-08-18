@@ -1,4 +1,10 @@
 #!/usr/bin/perl 
+
+#extractInfoRead.pl
+#Copyright (c) 2017 Noble Research Institute, LLC.
+
+
+
 ######## use samtools old version
 use warnings; use strict;
 use Getopt::Long;
