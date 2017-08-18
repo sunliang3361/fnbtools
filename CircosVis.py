@@ -10,11 +10,14 @@ to do:
 #encoding:utf-8
 """
 CircosVis.py
-created by Liang Sun on 2016-10-13
-Copyright (c) 2016 Liang Sun. All rights reserved.
+Copyright (c) 2017 Noble Research Institute, LLC.
+
+Created by Liang Sun on 2016-10-13
 Updated and maintained by Liang Sun since Oct 2016
 
-CircosVis visualize small variance and large deletions
+CircosVis visualizes small variance and large deletions
+
+This portion of FNBTools depends on Circos, Copyright (c) 2004-2016 Martin Krzywinski, GPL License
 
 usage:
 	CircosVis [options] -c <control1[,control2,...]> -m <mutant1[,mutant2,...]> -o <output file>
