@@ -4,8 +4,9 @@
 #encoding:utf-8
 """
 VarDiff.py
-created by Liang Sun on 2016-10-13
-Copyright (c) 2016 Liang Sun. All rights reserved.
+Copyright (c) 2017 Noble Research Institute, LLC.
+
+Created by Liang Sun on 2016-10-13
 Updated and maintained by Liang Sun since Oct 2016
 
 VarDiff compare two or more samples and identify the unique SNPs and small Indels

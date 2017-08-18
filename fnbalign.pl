@@ -1,5 +1,12 @@
 #!/usr/bin/perl 
 
+#Copyright (c) 2017 Noble Research Institute, LLC.
+#This portion of FNBTools depends on the following open source software:
+#	Samtools, Copyright (C) 2008-2014 Genome Research Ltd., The MIT/Expat License
+#	Bcftools, Copyright (C) 2008-2014 Genome Research Ltd., The MIT/Expat License
+#	Bedtools, Copyright (C) 1989, 1991 Free Software Foundation, Inc., GNU GENERAL PUBLIC LICENSE
+#	BWA, Copyright (C) 2007 Free Software Foundation, Inc., GNU GENERAL PUBLIC LICENSE
+
 use warnings; use strict;
 use FindBin;
 use Getopt::Long;
