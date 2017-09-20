@@ -45,7 +45,10 @@ FNBTools has been tested on the following Linux distributions:
 * REQUIRED -1 the paired read file 1
 * REQUIRED -2 the paired read file 2
 * REQUIRED -n the name of your project (output files will be placed in a directory with the name you provide)
-
+* OPTIONAL:    
+  * -p <Num Num Num> cpu number for 'BWA mem', 'samtools view'  and 'samtools sort' [default 8 2 2]
+  * -l <int> the size of library fragment  [default 500bp]      
+  * -h print this help message  
 ### Example:
 
 An example data set is provided with this repository.
@@ -103,23 +106,21 @@ Running Step 1 using the example data set provided with this repository would pr
 ### Parameters:
 
 * REQUIRED -n the project name (use the name you chose in Step 1)
-* REQUIRED -c the control BED file
 * REQUIRED -m the mutant BED file
 * REQUIRED -o output file name containing identified deletions
 
-* OPTIONAL:
-  * -f input annotation file to annotate deletions     
+* OPTIONAL:  
   * -h print this help message 
-	* -c the control bedg file(s),used to filter out homo and heter deletion
-	* -x the contorl bedg file(s),used to filter out homo deletions
-	* -g input annotation file to annotate deletions     
-	* -h print this help message
-	* -a print all homo deletions in mutant including the deletions exist in control * sample [0|1, default:0]
-	* -r the overlapping rate between gaps and informative deletion at the same * genomic regions [default:0.9]
-	* -d the minimal distance between the breakpoint of informative reads and the * start postion of gap [default:20]
-	* -b the minimal crossed reads when there is no clipped reads [default:3]
-	* -s the minimal small deletion reads [default:2]
-	* -f the minimal flanking reads up and downstream of deletions [default:1]
+  * -c the control bedg file(s),used to filter out homo and heter deletion
+  * -x the contorl bedg file(s),used to filter out homo deletions
+  * -g input annotation file to annotate deletions     
+  * -a print all homo deletions in mutant including the deletions exist in control * sample [0|1, default:0]
+  * -r the overlapping rate between gaps and informative deletion at the same * genomic regions [default:0.9]
+  * -d the minimal distance between the breakpoint of informative reads and the * start postion of gap [default:20]
+  * -b the minimal crossed reads when there is no clipped reads [default:3]
+  * -s the minimal small deletion reads [default:2]
+  * -i the minimal total number of clipped reads and small deletion reads [default:2]
+  * -f the minimal flanking reads up and downstream of deletions [default:1]
 
 ### Example:
 
@@ -162,11 +163,11 @@ Running Step 2 using the example data set provided with this repository, along w
 
 #### 2. BED file with annotation (optional)
 
-If you specify an argument to the `-f` switch which provides an annotation file to annotate deletions, a second BED file with the annotations will be created.
+If you specify an argument to the `-g` switch which provides an annotation file to annotate deletions, a second BED file with the annotations will be created.
 
 The output is placed in ./fnb (i.e. in the directory named after your project)
 
-Running Step 2 using the example data set provided with this repository, along with the results of running Step 1 **with a `-f` switch argument** would produce the following additional BED file:
+Running Step 2 using the example data set provided with this repository, along with the results of running Step 1 **with a `-g` switch argument** would produce the following additional BED file:
 
 * ./fnb/fnb.mt4_chr1_alldeletion_20x_annot.bed
 
