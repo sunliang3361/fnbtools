@@ -197,7 +197,7 @@ Since our sample deletion file from step 2
 
 Please use file "wen.S1_alldeletion_uniq_annot.bed" in the example directory of this repository to see example output of the circosvis program.
 
-## Contact
+# Contact
 
 * Dr. Liang Sun    lsun@noble.org
 * Andrew Bancroft    acbancroft@noble.org
