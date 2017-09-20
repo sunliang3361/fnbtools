@@ -1,29 +1,4 @@
 #!/usr/bin/perl 
-
-# Noble Research Institute, LLC License
- 
-# Copyright (c) 2017 Noble Research Institute, LLC
- 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
- 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
- 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE. UNLESS OTHERWISE PROHIBITED BY LAW, RECIPIENT AGREES TO INDEMNIFY, 
-# DEFEND WITH COUNSEL ACCEPTABLE TO PROVIDER, AND HOLD HARMLESS PROVIDER AND 
-# PROVIDER’S TRUSTEES, OFFICERS, AGENTS, AND EMPLOYEES FROM ANY AND ALL CLAIMS.
-
 ######## use samtools old version
 use warnings; use strict;
 use Getopt::Long;
@@ -47,8 +22,9 @@ my $usage = "USAGE:
 	-r the overlapping rate between gaps and informative deletion at the same genomic regions [default:0.9]
 	-d the minimal distance between the breakpoint of informative reads and the start postion of gap [default:20]
 	-b the minimal crossed reads when there is no clipped reads [default:3]
-	-s the minimal small deletion reads [default:2]
-	-f the minimal flanking reads up and downstream of deletions [default:1]
+	-s the minimal small deletion reads [default:3]
+	-i the minimal total number of clipped reads and small deletion reads [default:2]
+	-f the minimal flanking reads up and downstream of deletions [default:2]
 
 	eg: perl fnbscan.pl -n fnb -c fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g Mtruncatula_285_Mt4.0v1.gene.gff3
 	eg: perl fnbscan.pl -n 20x -c 20x/20x.mt4_sim20x1.bedg -m 20x/20x.mt4_mut300_sim20x1.bedg -o 20x/alldeletion_20x.bed
@@ -70,8 +46,9 @@ my $help = '';
 my $orate = 0.9;
 my $minDiff = 20;
 my $minCRR = 3;
-my $minSMD = 2;
-my $minFR = 1;
+my $minSMD = 3;
+my $minInfo = 2;
+my $minFR = 2;
 my $allHomo = 0;
 my $cmd;
 
@@ -86,6 +63,7 @@ GetOptions(
 	'-d=i' =>\$minDiff,
 	'-b=i' =>\$minCRR,
 	'-s=i' =>\$minSMD,
+	'-i=i' =>\$minInfo,
 	'-f=i' =>\$minFR,
 	'-a=i' =>\$allHomo,
 	'-o=s' =>\$outfile,
@@ -115,18 +93,18 @@ if (!@mfile){
 if(@cfile){
 	my $mfiles = join(" ",@mfile);
 	my $cfiles = join(" ",@cfile);
-	$cmd = "python $dir/DelDiff.py -c $cfiles -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -a $allHomo -o $outfile ";
+	$cmd = "python $dir/DelDiff.py -c $cfiles -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -i $minInfo -a $allHomo -o $outfile ";
 	process_cmd($cmd);
 }
 elsif(@xfile){
 	my $mfiles = join(" ",@mfile);
 	my $xfiles = join(" ",@xfile);
-	$cmd = "python $dir/DelDiff.py -x $xfiles -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -a $allHomo -o $outfile ";
+	$cmd = "python $dir/DelDiff.py -x $xfiles -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -i $minInfo -a $allHomo -o $outfile ";
 	process_cmd($cmd);
 }
 else{
 	my $mfiles = join(" ",@mfile);
-	$cmd = "python $dir/DelDiff.py -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -a $allHomo -o $outfile ";
+	$cmd = "python $dir/DelDiff.py -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -i $minInfo -a $allHomo -o $outfile ";
 	process_cmd($cmd);
 }
 

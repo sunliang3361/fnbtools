@@ -1,30 +1,5 @@
 #!/usr/bin/env python
 
-"""
-Noble Research Institute, LLC License
- 
-Copyright (c) 2017 Noble Research Institute, LLC
- 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
- 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
- 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE. UNLESS OTHERWISE PROHIBITED BY LAW, RECIPIENT AGREES TO INDEMNIFY, 
-DEFEND WITH COUNSEL ACCEPTABLE TO PROVIDER, AND HOLD HARMLESS PROVIDER AND 
-PROVIDER’S TRUSTEES, OFFICERS, AGENTS, AND EMPLOYEES FROM ANY AND ALL CLAIMS.
-"""
 # automatically detect the different deletion (zero coverage from bam file)
 # if two deletions have less than 50% overlapping regions and both of them are >100bp, we will output it
 # compare with the other three sample, if this deletion appears less than three time, we filter it out.
@@ -32,9 +7,8 @@ PROVIDER’S TRUSTEES, OFFICERS, AGENTS, AND EMPLOYEES FROM ANY AND ALL CLAIMS.
 #encoding:utf-8
 usage = """
 VarDiff.py
-Copyright (c) 2017 Noble Research Institute, LLC.
-
-Created by Liang Sun on 2016-10-13
+created by Liang Sun on 2016-10-13
+Copyright (c) 2016 Liang Sun. All rights reserved.
 Updated and maintained by Liang Sun since Oct 2016
 
 DelDiff compare two or more samples and identify the unique gap as the deletions
@@ -75,7 +49,7 @@ def read1File(delFile):
 
 
 #read multiple inforamtive deletion files into one container
-def readInfoDel(files,minCRR,minSMD,minFR,type):
+def readInfoDel(files,minCRR,minSMD,minInfo,minFR,type):
 	chr_infodel = {}
 	for f in files:
 		#chr_infodel_c = read1File(f)
@@ -104,7 +78,10 @@ def readInfoDel(files,minCRR,minSMD,minFR,type):
 			elif type == 'm':
 				if int(clr_n) == 0 and int(smd_n) == 0 and int(ccr_n) < minCRR:          ####################cutoff to filter out inconfident deletions
 					continue
-				if int(smd_n) != 0 and (int(clr_n)+int(smd_n)) < minSMD:
+				if int(clr_n) == 0 and int(smd_n) != 0 and int(smd_n) < minSMD:
+					continue
+				#if int(smd_n) != 0 and (int(clr_n)+int(smd_n)) < minInfo:
+				if (int(clr_n)+int(smd_n)) < minInfo:
 					continue
 				if int(flr_n) < minFR or int(frr_n) < minFR:
 					continue
@@ -261,13 +238,14 @@ parser = argparse.ArgumentParser(description="DelDiff compare two or more sample
 parser.add_argument('--version', action='version', version='%(prog)s 1.0')
 parser.add_argument('-c', action='store', dest='cfile', nargs='*', help="one or multiple wild type bedg files, filter out homo and heter deletions")
 parser.add_argument('-x', action='store', dest='xfile', nargs='*', help="one or multiple wild type bedg files, filter out homo deletions only")
-parser.add_argument('-m', action='store', dest='mfile', help="one mutant sample bedg file")
+parser.add_argument('-m', action='store', dest='mfile', nargs='*', help="one mutant sample bedg file")
 parser.add_argument('-o', action='store', dest='ofile', help="the output file name for big file")
 parser.add_argument('-r', action='store', default='0.9', type=float, dest='orate', help="gap overlapping rates")
 parser.add_argument('-d', action='store', default='20', type=int, dest='minDiff', help="the minimal distance between the breakpoint and the start position of gap")
 parser.add_argument('-b', action='store', default='3', type=int, dest='minCRR', help="the minimal crossed reads when there is no clipped reads [default:3]")
-parser.add_argument('-s', action='store', default='2', type=int, dest='minSMD', help="the minimal small deletion reads [default:2]")
-parser.add_argument('-f', action='store', default='1', type=int, dest='minFR', help="the minimal flanking reads up and downstream of deletions")
+parser.add_argument('-s', action='store', default='3', type=int, dest='minSMD', help="the minimal small deletion reads [default:3]")
+parser.add_argument('-i', action='store', default='2', type=int, dest='minInfo', help="the minimal total number of informative reads (clipped and small reads [default:2]")
+parser.add_argument('-f', action='store', default='2', type=int, dest='minFR', help="the minimal flanking reads up and downstream of deletions")
 parser.add_argument('-a', action='store', default='0', type=int, dest='allHomo', help="print all homo deletions in mutant including the deletions exist in control sample")
 args = parser.parse_args()
 
@@ -291,6 +269,7 @@ orate = args.orate #overlapping between control gap and the mutant inforamtive d
 minDiff = args.minDiff #the minimal distance between the start position of informative deletion and the gap in the mutant.
 minCRR = args.minCRR # if there is no clipped read, the minimal number of Crossed reads
 minSMD = args.minSMD
+minInfo = args.minInfo
 minFR = args.minFR
 allHomo = args.allHomo
 minDiff_rep = 5 # the minimal distance difference to distinguish the informative deletion and small deletions
@@ -308,11 +287,11 @@ if len(sys.argv) == 1:
 
 ############################# more (>=1) samples vs more  (>=1) samples #############################
 if cfile:
-	chr_gap_m = read1File(mfile)
+	chr_gap_m = read1File(mfile[0])
 	
-	file = [mfile]
-	chr_infodel_c = readInfoDel(cfile,minCRR,minSMD,minFR,'c') #here we have all homo and heter deletions
-	chr_infodel_m = readInfoDel(file,minCRR,minSMD,minFR,'m')
+	file = mfile
+	chr_infodel_c = readInfoDel(cfile,minCRR,minSMD,minInfo,minFR,'c') #here we have all homo and heter deletions
+	chr_infodel_m = readInfoDel(file,minCRR,minSMD,minInfo,minFR,'m')
 	chr_infodel_homo = identifyHomo(chr_infodel_m,chr_gap_m,minDiff_rep,minDiff,orate)
 	deletions = filterDels(chr_infodel_homo,chr_infodel_c,minDiff_rep,minDiff,"all")
 elif xfile:
@@ -320,16 +299,16 @@ elif xfile:
 	chr_infodel_homo_m = {}
 	chr_infodel_homo_c = {} #here we need all homo deletions
 
-	file = [mfile]
-	chr_gap_m_tmp = read1File(mfile)
-	chr_infodel_m_tmp = readInfoDel(file,minCRR,minSMD,minFR,'m')
+	file = mfile
+	chr_gap_m_tmp = read1File(mfile[0])
+	chr_infodel_m_tmp = readInfoDel(file,minCRR,minSMD,minInfo,minFR,'m')
 	chr_infodel_homo_tmp = identifyHomo(chr_infodel_m_tmp,chr_gap_m_tmp,minDiff_rep,minDiff,orate)
 	chr_infodel_homo_m.update(chr_infodel_homo_tmp)		
 	#identify homo deletions in mutant samples:
 	for f in xfile:
 		file = [f]
 		chr_gap_c_tmp = read1File(f)
-		chr_infodel_c_tmp = readInfoDel(file,minCRR,minSMD,minFR,'m')
+		chr_infodel_c_tmp = readInfoDel(file,minCRR,minSMD,minInfo,minFR,'m')
 		chr_infodel_homo_tmp = identifyHomo(chr_infodel_c_tmp,chr_gap_c_tmp,minDiff_rep,minDiff,orate)
 		chr_infodel_homo_c.update(chr_infodel_homo_tmp)		
 	#fitler out homo deletions in controls
@@ -337,7 +316,7 @@ elif xfile:
 else:
 	print "no control file provided!"
 	chr_gap_m = read1File(mfile[0])
-	chr_infodel_m = readInfoDel(mfile,minCRR,minSMD,minFR,'m')
+	chr_infodel_m = readInfoDel(mfile,minCRR,minSMD,minInfo,minFR,'m')
 	deletions = identifyHomo(chr_infodel_m,chr_gap_m,minDiff_rep,minDiff,orate)
 	
 

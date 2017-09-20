@@ -1,35 +1,5 @@
 #!/usr/bin/perl 
 
-# Noble Research Institute, LLC License
- 
-# Copyright (c) 2017 Noble Research Institute, LLC
- 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
- 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
- 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE. UNLESS OTHERWISE PROHIBITED BY LAW, RECIPIENT AGREES TO INDEMNIFY, 
-# DEFEND WITH COUNSEL ACCEPTABLE TO PROVIDER, AND HOLD HARMLESS PROVIDER AND 
-# PROVIDER’S TRUSTEES, OFFICERS, AGENTS, AND EMPLOYEES FROM ANY AND ALL CLAIMS.
-
-#This portion of FNBTools depends on the following open source software:
-#	Samtools, Copyright (C) 2008-2014 Genome Research Ltd., The MIT/Expat License
-#	Bcftools, Copyright (C) 2008-2014 Genome Research Ltd., The MIT/Expat License
-#	Bedtools, Copyright (C) 1989, 1991 Free Software Foundation, Inc., GNU GENERAL PUBLIC LICENSE
-#	BWA, Copyright (C) 2007 Free Software Foundation, Inc., GNU GENERAL PUBLIC LICENSE
-
 use warnings; use strict;
 use FindBin;
 use Getopt::Long;
@@ -147,8 +117,8 @@ if(-e $result_dirc){
 if(-e $result_temp ){
 	print "using temperary directory: $result_temp \n";
 	#empty all temporary bam files
-	$cmd = "rm $result_temp/*";
-	system($cmd) == 0 or die $!;
+	#$cmd = "rm $result_temp/*";
+	#system($cmd) == 0 or die $!;
 }else{
 	$cmd = "mkdir $result_temp";
 	system($cmd) == 0 or die $!;
@@ -188,8 +158,6 @@ foreach my $rs1 (@rs1_originals){
 	print "input2: $rs2, $rs2_file\n";	
 
 	#my $transformtobed_bam ;
-	# if($fast =~ /N/i and $bam == 0){
-	#$cmd = "bwa mem -T 20 -t $cpu_bwa $result_temp/$proj.ref.fa $rs1 $rs2 |tee $result_temp/$proj.$rs1_file._ref.sam  |samtools view -@ $cpu_view -buS -q 30 - | samtools sort -@ $cpu_sort  - -O bam -o $result_temp/$proj.$rs1_file._ref.sort.bam";
 	$cmd = "bwa mem -T 20 -t $cpu_bwa $result_temp/$proj.ref.fa $rs1 $rs2 > $result_temp/$proj.$rs1_file.ref.sam";
 	process_cmd($cmd);
 	
@@ -199,7 +167,7 @@ foreach my $rs1 (@rs1_originals){
 	
 	# remove the sam file which takes too much space
 	$cmd = "rm $result_temp/$proj.$rs1_file.ref.sam";
-	#process_cmd($cmd);
+	process_cmd($cmd);
 	
 	#convert sam to bam, sort and index bam file
 	$cmd = "samtools view -@ $cpu_view -buS -q 30 $result_dirc/$proj.$rs1_file.fix.sam | samtools sort -@ $cpu_sort  - -O bam -o $result_temp/$proj.$rs1_file.ref.sort.bam";
@@ -210,7 +178,7 @@ foreach my $rs1 (@rs1_originals){
 
 	# remove the fixed sam file which takes too much space
 	$cmd = "rm $result_dirc/$proj.$rs1_file.fix.sam";
-	#process_cmd($cmd);
+	process_cmd($cmd);
 
 	##### Step 2 add supporting reads for flanking reads left and right by using the bam file with mapping score > 30 #####
 	open(BED,"<$result_dirc/$proj.$rs1_file.bed") or die $!;
@@ -224,8 +192,8 @@ foreach my $rs1 (@rs1_originals){
 			next;
 		}
 		my ($del_n, $chr,$breakpoint,$breakpoint_end,$deletion,$suppRead) = split /\t/, $line;
-		my $fl = $breakpoint - $lib_len/2; #$lib_len/3; #the start position of left flanking region
-		my $fr = $breakpoint_end + $lib_len/2; #$lib_len/3; #the end position of right flanking region
+		my $fl = $breakpoint - 20 ;#$lib_len/2; #$lib_len/3; #the start position of left flanking region
+		my $fr = $breakpoint_end + 20; #$lib_len/2; #$lib_len/3; #the end position of right flanking region
 		#???????????????????????????add flanking reads number here??????????????????????????????????????
 		open my $fl_depth, "samtools depth -r $chr:$fl-$breakpoint $result_temp/$proj.$rs1_file.ref.sort.bam |" or die $!;
 		open my $fr_depth, "samtools depth -r $chr:$breakpoint_end-$fr $result_temp/$proj.$rs1_file.ref.sort.bam |" or die $!;
@@ -242,10 +210,10 @@ foreach my $rs1 (@rs1_originals){
 			my @records = split /\t/,$_;
 			$fr_n = $fr_n + $records[2];
 		}
-		my $flr = int($fl_n*2/$lib_len);
-		my $frr = int($fr_n*2/$lib_len);
-		# my $flr = int($fl_n/20);
-		# my $frr = int($fr_n/20);
+		#my $flr = int($fl_n*2/$lib_len);
+		#my $frr = int($fr_n*2/$lib_len);
+		my $flr = int($fl_n/20);
+		my $frr = int($fr_n/20);
 		print BEDfix $line."FLR=$flr;FRR=$frr\n";
 		close $fl_depth;
 		close $fr_depth;

@@ -1,31 +1,4 @@
 #!/usr/bin/perl 
-
-#extractInfoRead.pl
-# Noble Research Institute, LLC License
- 
-# Copyright (c) 2017 Noble Research Institute, LLC
- 
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
- 
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
- 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE. UNLESS OTHERWISE PROHIBITED BY LAW, RECIPIENT AGREES TO INDEMNIFY, 
-# DEFEND WITH COUNSEL ACCEPTABLE TO PROVIDER, AND HOLD HARMLESS PROVIDER AND 
-# PROVIDER’S TRUSTEES, OFFICERS, AGENTS, AND EMPLOYEES FROM ANY AND ALL CLAIMS.
-
-
 ######## use samtools old version
 use warnings; use strict;
 use Getopt::Long;
@@ -443,7 +416,7 @@ my @clust_lst;
 my $window = $lib_size/2; #need to change so that users can change the size by themselves ???????????????????????????????????????
 my $clust_flag = 0;
 #sort infoReads.loc.lst file according to the breakpoint position
-system("sort -k 2,2 -k 3,3n $outfile >$proj.infoReads.loc.sorted.lst");
+system("sort -k 2,2 -k 3,3n -k 4,4n $outfile >$proj.infoReads.loc.sorted.lst");
 open DEL, $proj.".infoReads.loc.sorted.lst" or die $!;
 
 
@@ -461,25 +434,28 @@ while(<DEL>){
 		$win = $window;
 	}elsif($typ=~/CLR/){
 		#clipped reads
-		$win = 20;
+		$win = 30;
 	}elsif($typ=~/SMD/){
-		$win = 5;
+		$win = 3;
 	}
 	else{
 		$win = $window;
 	}
 	#if last reads is small deletion, then the next reads should use a small window even if the next read is clipped reads.
 	if($infoRead{ty}=~/SMD/){
-		$win = 5;
+		$win = 3;
 	}
 	
 	#get a cluster of support reads
-	if($chr eq $infoRead{chr} and abs($bk_pos-$infoRead{pos})<=$win){
+	# if($chr eq $infoRead{chr} and abs($bk_pos-$infoRead{pos})<=$win and abs($del-$infoRead{del})>$win ) {
+		# next;
+	# }
+	if($chr eq $infoRead{chr} and abs($bk_pos-$infoRead{pos})<=$win and abs($del-$infoRead{del})<=$window) { #deletion size should be less than $win
 		readInfoRead($_,$chr,$bk_pos,$bk_end,$del,$typ);
 		if(eof(DEL)){
 			#collect read info for this cluster
 			my $delInfo = analyzeClust(@clust);
-			print "Clust:".$clust_flag."\n";
+			#print "Clust:".$clust_flag."\n";
 			$clust_flag++;
 			push @clust_lst,$delInfo;
 			
@@ -488,7 +464,7 @@ while(<DEL>){
 	
 	}else{
 		my $delInfo = analyzeClust(@clust);
-		print "Clust:".$clust_flag."\n";
+		#print "Clust:".$clust_flag."\n";
 		$clust_flag++;
 		push @clust_lst,$delInfo;
 		
@@ -500,7 +476,7 @@ while(<DEL>){
 		if(eof(DEL)){
 			#collect read info for this cluster
 			my $delInfo = analyzeClust(@clust);
-			print "Clust:".$clust_flag."\n";
+			#print "Clust:".$clust_flag."\n";
 			$clust_flag++;
 			push @clust_lst,$delInfo;
 			
@@ -544,6 +520,7 @@ sub readInfoRead{
 	push @clust, $it;
 	$infoRead{chr} = $chr;
 	$infoRead{pos} = $bk_pos;
+	$infoRead{del} = $del;
 	$infoRead{ty} = $typ;
 
 }
