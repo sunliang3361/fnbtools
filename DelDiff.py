@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-# automatically detect the different deletion (zero coverage from bam file)
-# if two deletions have less than 50% overlapping regions and both of them are >100bp, we will output it
-# compare with the other three sample, if this deletion appears less than three time, we filter it out.
 
 #encoding:utf-8
 usage = """
@@ -362,8 +359,7 @@ for (chr,brkpt) in deletions:
 
 #FileOUT.write('Del#\tchr\tstart_position\tend_position\tdeletionLength\tbreakpoint_pos\tsupportRead\tdel_mutant\tdel_control\tHomo_Unique\n')
 FileOUT.write('DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#\tGapStarts_position\tGapEnd_position\tDel_mutant\tDel_control\tHomo_Unique\n')
-#DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#
-#FileFiltOUT.write('chr\tstart_position\tend_position\tdeletionLength\tfreq\n')
+
 Del_num = 1;			
 for (chr,brkpt) in sorted(deletions_fix):
 	if allHomo == 0:
@@ -381,7 +377,6 @@ for (chr,brkpt) in sorted(deletions_fix):
 
 			
 			
-#DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#\tGapStartstart_position\tGapEndend_position\tDel_mutant\tDel_control\tHomo_Unique
 				
 
 FileOUT.close()

@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 
-"""
-to do:
-1. check the number of big deletion, if too big, need to filter out smaller big deletions
-
-
-"""
-
 #encoding:utf-8
 """
 CircosVis.py
@@ -324,9 +317,6 @@ wfile = int
 lfile = ""
 ofile = ""
 
-############################# check the availability of pre-required software #############################
-#check circos module installed or not????????????????????????????????????????????????????
-#
 
 ############################## process command line arguments #############################
 parser = argparse.ArgumentParser(description="VarAnnot annotate small variants (snp&small indel) and big deletions")
