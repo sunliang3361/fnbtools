@@ -5,7 +5,7 @@ use FindBin;
 use Getopt::Long;
 use File::Basename;
 use Time::localtime;
-#use File::Which;
+
 
 #########################  parameters #####################
 my $usage = "USAGE:
@@ -15,8 +15,8 @@ my $usage = "USAGE:
 	REQUIRED -2 the paired read file 2
 	REQUIRED -n the the name of you project
 
-		-p <Num Num Num> cpu number for 'BWA mem', 'samtools view'  and 'samtools sort', [defualt 8 2 2]
-	    -l <int> the size of library fragment     
+		-p <Num Num Num> cpu number for 'BWA mem', 'samtools view'  and 'samtools sort', [default 8 2 2]
+	    -l <int> the size of library fragment  [default 500bp]   
 		-h print this help message    
 
 	
@@ -30,7 +30,6 @@ my $usage = "USAGE:
 
 die "$usage\n" if (@ARGV == 0);
 
-#my $dir = "/usr/local/fnbtools";
 my $dir = "$FindBin::Bin";
 my $genome;
 my $proj   = "fnb";                 
@@ -38,7 +37,7 @@ my @rs1_originals;
 my @rs2_originals;
 my $lib_len = 500;
 my @cpu;
-#my $cpu = 8;
+
 
 my $help = '';
 
@@ -61,11 +60,10 @@ if(!$cpu_bwa || !$cpu_view|| !$cpu_sort){
 	$cpu_view = 2;
 	$cpu_sort = 2;
 }
-#my $cpu_bwa= my$cpu_view=my$cpu_sort = $cpu;
-#print $cpu_bwa, $cpu_view,$cpu_sort."\n";
+
 
 my $result_dirc = $proj;
-my $result_temp = $proj."/temp";             #we are here
+my $result_temp = $proj."/temp";             
 
 
 
@@ -79,8 +77,6 @@ if (!@rs1_originals ||!@rs2_originals){
 }
 
 ########################check exist of required tools##################################
-#software must be in the path
-####check software
 my $samtools;
 my $bwa;
 my $bcftools;
@@ -104,7 +100,7 @@ die "No bedtools command available\n" unless ( $bedtools );
 
 
 
-##########################################################
+########################check exist of result folder ##################################
 
 if(-e $result_dirc){
 	print "using directory: $result_dirc\n";
@@ -129,7 +125,6 @@ open CMD, ">$result_temp/run.log" or die $!;
 
 
 ###################### Step 1.1 Index genome sequence ########
-#bwa index mt4.fa 
 
 $cmd="cp $genome $result_temp/$proj.ref.fa";
 process_cmd($cmd);
@@ -144,10 +139,7 @@ process_cmd($cmd);
 
 
 ##### Step 1.2 align original reads to reference genome ######
-#bwa mem -t 20  mt4.fa ngs-0r7t3d_S1_L001_R1_001.fastq ngs-0r7t3d_S1_L001_R2_001.fastq >aln.sam
-#samtools view
-# #samtools sort
-#samtools index $result_dirc/$proj.all_reads_aln_reference.sort.bam
+
 my $findex=0;
 foreach my $rs1 (@rs1_originals){
 
@@ -194,7 +186,7 @@ foreach my $rs1 (@rs1_originals){
 		my ($del_n, $chr,$breakpoint,$breakpoint_end,$deletion,$suppRead) = split /\t/, $line;
 		my $fl = $breakpoint - 20 ;#$lib_len/2; #$lib_len/3; #the start position of left flanking region
 		my $fr = $breakpoint_end + 20; #$lib_len/2; #$lib_len/3; #the end position of right flanking region
-		#???????????????????????????add flanking reads number here??????????????????????????????????????
+		######################add flanking reads number here######################
 		open my $fl_depth, "samtools depth -r $chr:$fl-$breakpoint $result_temp/$proj.$rs1_file.ref.sort.bam |" or die $!;
 		open my $fr_depth, "samtools depth -r $chr:$breakpoint_end-$fr $result_temp/$proj.$rs1_file.ref.sort.bam |" or die $!;
 		my $fl_n = 0;
@@ -221,7 +213,7 @@ foreach my $rs1 (@rs1_originals){
 	close(BED);
 	close(BEDfix);
 
-	# get the gap file
+	####################### get the gap file ######################
 	#$cmd= "genomeCoverageBed -ibam $result_temp/$proj.$rs1_file.ref.sort.bam -bga |";
 	$cmd= "bedtools genomecov -ibam $result_temp/$proj.$rs1_file.ref.sort.bam -bga |";
 	open (OUT, ">$result_dirc/$proj.$rs1_file.bedg") or die ("cannot open bedg file");
