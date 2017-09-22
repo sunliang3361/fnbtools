@@ -1,12 +1,10 @@
 #!/usr/bin/perl 
-######## use samtools old version
+
 use warnings; use strict;
 use Getopt::Long;
-#use Statistics::Basic qw(:all);
 use List::Util qw[min max];
-
 use Time::localtime;
-#use File::Which;
+
 
 #########################  parameters #####################
 my $usage = "USAGE:
@@ -30,9 +28,6 @@ die "$usage\n" if (@ARGV == 0);
 my $proj   = "fnb";
 my $sam;
 my $lib_size;
-#my $tmp_dir = "$proj.".time();
-
-#my $tmp_dir = "result";
 my $help = '';
 
 GetOptions(
@@ -78,9 +73,9 @@ open SAM, $sam or die $!;
 open SAMm, ">$sam_m" or die $!;
 
  
-#open OUT, ">infoReads.sam" or die $!;
+
 open LOC, ">$outfile" or die $!;
-#open LOC_smDel, ">$outfile_smDel" or die $1;
+
 
 while(<SAM>){
 	chomp;
@@ -104,7 +99,7 @@ while(<SAM>){
 	
 	#get all clipped reads and cross reads from sam file
 	#output all informative reads to file (with reads ID, chromosome, direction, breakpoint, CRR(cross reads)/CLR(ClippedReads ), Mapping quality)
-	#deletion dash line edit from original samtools???????????????????????????????????
+	#deletion dash line edit from original samtools
 	#cluster all informative reads to a deletion files (chromosome, breakpoint,endpoint, deletionlength, SR=crossReads, clipped reads) for each sample
 	#confirm deletion by FNBtool and fitler out deletons from control sample.
 	if ($last and $id ne $last and %reads){
@@ -137,7 +132,7 @@ while(<SAM>){
 				print SAMm $reads{2}."\n";
 			}
 		}
-		# there is no informative reads?????? Just print it out to SAMm
+		# there is no informative reads? Just print it out to SAMm
 		else{ #single reads here
 			if (defined $dist{1}){
 				#print "checking this reads:".$reads{1}."\n";
