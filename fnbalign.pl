@@ -30,6 +30,7 @@ my $usage = "USAGE:
 
 die "$usage\n" if (@ARGV == 0);
 
+#my $dir = "/usr/local/fnbtools";
 my $dir = "$FindBin::Bin";
 my $genome;
 my $proj   = "fnb";                 
