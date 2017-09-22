@@ -32,7 +32,7 @@ FNBTools has been tested on the following Linux distributions:
 
 
 # Using FNBTools
-
+### (Recommendation: trim your NGS reads using Trimmomatics or other NGS trimmer before using FNBtools)
 ## Step 1 - Align all reads to reference genome
 
 ### Usage:

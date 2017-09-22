@@ -77,13 +77,8 @@ my $outfilebase = basename $outfile;
 (my $filebase = $outfilebase) =~ s/\.[^.]+$//;
 
 
-######################### Step1: call VarDiff to identify SNP and small indels##############
-# my $cfile_vd = process_input(\@cfile,"vcf");
-# my $mfile_vd = process_input(\@mfile,"vcf");
-# $cmd = "python VarDiff.py -c $cfile_vd -m $mfile_vd -o $result_dirc/$proj.$filebase";
-# process_cmd($cmd);
 
-##########################Step2: call DelDiff to identify deletions and merge the deletions identified from clipped and cross reads###############
+##########################Step1: call DelDiff to identify deletions and merge the deletions identified from clipped and cross reads###############
 if (!@mfile){
 	print "Your your mutant files do not exist!\n";
 	exit 0;
@@ -111,7 +106,7 @@ else{
 
 
 
-##########################Step3: call VarAnnot to annotate deletions (optional)###############
+##########################Step2: call VarAnnot to annotate deletions (optional)###############
 if ($gff){  #we will annotate deletion files
 	#annotate all deletions
 	(my $ofilebase = $outfile) =~s/\.[^.]+$//;
@@ -123,7 +118,7 @@ if ($gff){  #we will annotate deletion files
 }
 
 
-#	subfunctions
+##########################	subfunctions #########################
 sub process_input{
 	my($file,$suffix) = @_;
 	my $newfile="";
