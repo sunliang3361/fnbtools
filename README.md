@@ -12,7 +12,7 @@ FNBTools has been tested on the following Linux distributions:
 
 ## Install from Source
 
-1. Run: `git clone ---` (or download fnbtools.tar.gz from Releases and run `tar -xzvf fnbtools.tar.gz`)
+1. Run: `git clone` (or download fnbtools.tar.gz from Releases and run `tar -xzvf fnbtools.tar.gz`)
 2. Run: `sudo ./Install.sh`
 3. If prompted with "Would you like to configure as much as possible automatically? [yes]", type **yes** and then press Enter. This will automatically configure Perl's CPAN utility so that additional Perl modules can be installed.
 4. If prompted with "Would you like me to automatically choose some CPAN mirror sites for you? [yes]", type **yes** and then press Enter.  This will automatically configure Perl's CPAN utility with a mirror site from which it can download Perl modules.
