@@ -63,6 +63,8 @@ def writeDelTextFile(trackfile,lfile,minLen,maxLen):
         data = line.strip().split("\t")
         if 'scaffold' in data[1]:
             continue
+        if len(data) < 12:
+            sys.exit("Input file error: Please provide deletion file with annotation for each deletion!")
         if minLen < int(data[4]) <= maxLen and data[11] != "[]":
             info = data[11].translate(None,"'[]").split(",")
             for id in info:
