@@ -27,8 +27,7 @@ FNBTools has been tested on the following Linux distributions:
 
 ## Install in Docker container
 
-1. git clone ---
-2. 
+1. coming soon
 
 
 # Using FNBTools
@@ -101,7 +100,7 @@ Running Step 1 using the example data set provided with this repository would pr
 
 ### Usage:
 
-`fnbscan -n fnb -c control.bedg -m mutant.bedg`
+`fnbscan -n fnb -m mutant.bedg -o all_deletion.bed`
 
 ### Parameters:
 
