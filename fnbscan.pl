@@ -21,7 +21,7 @@ my $usage = "USAGE:
 	-a print all homo deletions in mutant including the deletions exist in control sample [0|1, default:0]
 	-r the overlapping rate between gaps and informative deletion at the same genomic regions [default:0.9]
 	-d the minimal distance between the breakpoint of informative reads and the start postion of gap [default:20]
-	-b the minimal crossed reads when there is no clipped reads [default:3]
+	-b the minimal crossed reads when there is no clipped reads or small deletion reads [default:3]
 	-s the minimal small deletion reads [default:3]
 	-i the minimal total number of clipped reads and small deletion reads [default:2]
 	-f the minimal flanking reads up and downstream of deletions [default:2]
@@ -47,8 +47,8 @@ my $orate = 0.9;
 my $minDiff = 20;
 my $minCRR = 3;
 my $minSMD = 3;
-my $minInfo = 2;
-my $minFR = 2;
+my $minInfo = 3;
+my $minFR = 1;
 my $allHomo = 0;
 my $cmd;
 

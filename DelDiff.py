@@ -78,7 +78,7 @@ def readInfoDel(files,minCRR,minSMD,minInfo,minFR,type):
 				if int(clr_n) == 0 and int(smd_n) != 0 and int(smd_n) < minSMD:
 					continue
 				#if int(smd_n) != 0 and (int(clr_n)+int(smd_n)) < minInfo:
-				if (int(clr_n)+int(smd_n)) < minInfo:
+				if (int(clr_n)+int(smd_n)+int(ccr_n)) < minInfo:
 					continue
 				if int(flr_n) < minFR or int(frr_n) < minFR:
 					continue
@@ -241,8 +241,8 @@ parser.add_argument('-r', action='store', default='0.9', type=float, dest='orate
 parser.add_argument('-d', action='store', default='20', type=int, dest='minDiff', help="the minimal distance between the breakpoint and the start position of gap")
 parser.add_argument('-b', action='store', default='3', type=int, dest='minCRR', help="the minimal crossed reads when there is no clipped reads [default:3]")
 parser.add_argument('-s', action='store', default='3', type=int, dest='minSMD', help="the minimal small deletion reads [default:3]")
-parser.add_argument('-i', action='store', default='2', type=int, dest='minInfo', help="the minimal total number of informative reads (clipped and small reads [default:2]")
-parser.add_argument('-f', action='store', default='2', type=int, dest='minFR', help="the minimal flanking reads up and downstream of deletions")
+parser.add_argument('-i', action='store', default='3', type=int, dest='minInfo', help="the minimal total number of informative reads (clipped and small reads [default:2]")
+parser.add_argument('-f', action='store', default='1', type=int, dest='minFR', help="the minimal flanking reads up and downstream of deletions")
 parser.add_argument('-a', action='store', default='0', type=int, dest='allHomo', help="print all homo deletions in mutant including the deletions exist in control sample")
 args = parser.parse_args()
 

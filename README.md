@@ -12,7 +12,7 @@ FNBTools has been tested on the following Linux distributions:
 
 ## Install from Source
 
-1. Run: `git clone` (or download fnbtools.tar.gz from Releases and run `tar -xzvf fnbtools.tar.gz`)
+1. Run: `git clone ---` (or download fnbtools.tar.gz from Releases and run `tar -xzvf fnbtools.tar.gz`)
 2. Run: `sudo ./Install.sh`
 3. If prompted with "Would you like to configure as much as possible automatically? [yes]", type **yes** and then press Enter. This will automatically configure Perl's CPAN utility so that additional Perl modules can be installed.
 4. If prompted with "Would you like me to automatically choose some CPAN mirror sites for you? [yes]", type **yes** and then press Enter.  This will automatically configure Perl's CPAN utility with a mirror site from which it can download Perl modules.
@@ -116,7 +116,7 @@ Running Step 1 using the example data set provided with this repository would pr
   * -a print all homo deletions in mutant including the deletions exist in control * sample [0|1, default:0]
   * -r the overlapping rate between gaps and informative deletion at the same * genomic regions [default:0.9]
   * -d the minimal distance between the breakpoint of informative reads and the * start postion of gap [default:20]
-  * -b the minimal crossed reads when there is no clipped reads [default:3]
+  * -b the minimal crossed reads when there is no clipped reads or small deletion reads [default:3]
   * -s the minimal small deletion reads [default:2]
   * -i the minimal total number of clipped reads and small deletion reads [default:2]
   * -f the minimal flanking reads up and downstream of deletions [default:1]
