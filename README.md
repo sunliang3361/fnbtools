@@ -117,8 +117,8 @@ Running Step 1 using the example data set provided with this repository would pr
   * -r the overlapping rate between gaps and informative deletion at the same * genomic regions [default:0.9]
   * -d the minimal distance between the breakpoint of informative reads and the * start postion of gap [default:20]
   * -b the minimal crossed reads when there is no clipped reads or small deletion reads [default:3]
-  * -s the minimal small deletion reads [default:2]
-  * -i the minimal total number of clipped reads and small deletion reads [default:2]
+  * -s the minimal small deletion reads [default:3]
+  * -i the minimal total number of informative reads (clipped and small reads [default:3]
   * -f the minimal flanking reads up and downstream of deletions [default:1]
 
 ### Example:
