@@ -15,7 +15,7 @@ FNBTools has been tested on the following Linux distributions:
 
 1. Download
   * Run: `git clone https://github.com/noble-research-institute/fnbtools.git`
-  * Alternatively, you can go to [Releases](https://github.com/noble-research-institute/fnbtools/releases) and download fnbtools.tar.gz.  Then run `tar -xzvf fnbtools.tar.gz`)
+  * Alternatively, you can go to [Releases](https://github.com/noble-research-institute/fnbtools/releases) and download fnbtools.tar.gz.  Then run `tar -xzvf fnbtools.tar.gz`
   * If you click the "Clone or Download" button in GitHub and choose to "Download ZIP", run `unzip fnbtools-master.zip`
 
 2. Run: `sudo ./Install.sh`
