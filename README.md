@@ -180,7 +180,7 @@ Running Step 2 using the example data set provided with this repository, along w
 
 ### Usage:
 
-`CircosVis [options] -l <bigDeletion.vcf> -o <output file>`
+`CircosVis -l <bigDeletion.vcf> -o <output file>`
 
 ### Parameters:
 
