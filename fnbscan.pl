@@ -16,15 +16,16 @@ my $usage = "USAGE:
 	OPTIONS:
 	-c the control bedg file(s),used to filter out homo and heter deletion
 	-x the contorl bedg file(s),used to filter out homo deletions
+	-e output deletion frequency when the pool sample is contaminated (cannot used together with -x and -c)
 	-g input annotation file to annotate deletions     
 	-h print this help message
-	-a print all homo deletions in mutant including the deletions exist in control sample [0|1, default:0]
+	-a print all homo deletions in mutant including the deletions exist in control sample
 	-r the overlapping rate between gaps and informative deletion at the same genomic regions [default:0.9]
 	-d the minimal distance between the breakpoint of informative reads and the start postion of gap [default:20]
 	-b the minimal crossed reads when there is no clipped reads or small deletion reads [default:3]
 	-s the minimal small deletion reads [default:3]
-	-i the minimal total number of clipped reads and small deletion reads [default:2]
-	-f the minimal flanking reads up and downstream of deletions [default:2]
+	-i the minimal total number of informative reads (clipped and small reads [default:3]
+	-f the minimal flanking reads up and downstream of deletions [default:1]
 
 	eg: perl fnbscan.pl -n fnb -c fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g Mtruncatula_285_Mt4.0v1.gene.gff3
 	eg: perl fnbscan.pl -n 20x -c 20x/20x.mt4_sim20x1.bedg -m 20x/20x.mt4_mut300_sim20x1.bedg -o 20x/alldeletion_20x.bed
@@ -34,8 +35,8 @@ my $usage = "USAGE:
 
 die "$usage\n" if (@ARGV == 0);
 
-#my $dir = "/usr/local/fnbtools";
-my $dir = "$FindBin::Bin";
+my $dir = "/usr/local/fnbtools";
+#my $dir = "$FindBin::Bin";
 my $proj   = "fnb"; 
 my @cfile;
 my @xfile;
@@ -49,7 +50,8 @@ my $minCRR = 3;
 my $minSMD = 3;
 my $minInfo = 3;
 my $minFR = 1;
-my $allHomo = 0;
+my $allHomo;
+my $contam;
 my $cmd;
 
 
@@ -57,6 +59,7 @@ GetOptions(
     '-c:s@{,}' => \@cfile,
 	'-x:s@{,}' => \@xfile,
 	'-m=s@{1,}'=> \@mfile,
+	'-e' =>\$contam,
 	'-n=s' =>\$proj,
 	'-g=s' =>\$gff,
 	'-r=f' =>\$orate,
@@ -65,7 +68,7 @@ GetOptions(
 	'-s=i' =>\$minSMD,
 	'-i=i' =>\$minInfo,
 	'-f=i' =>\$minFR,
-	'-a=i' =>\$allHomo,
+	'-a' =>\$allHomo,
 	'-o=s' =>\$outfile,
 	'-h' => \$help
 );
@@ -88,18 +91,33 @@ if (!@mfile){
 if(@cfile){
 	my $mfiles = join(" ",@mfile);
 	my $cfiles = join(" ",@cfile);
-	$cmd = "python $dir/DelDiff.py -c $cfiles -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -i $minInfo -a $allHomo -o $outfile ";
+	if ($allHomo){
+		$cmd = "python $dir/DelDiff.py -c $cfiles -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -i $minInfo -a -o $outfile ";
+	}else{
+		$cmd = "python $dir/DelDiff.py -c $cfiles -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -i $minInfo -o $outfile ";
+	}
+	
 	process_cmd($cmd);
 }
 elsif(@xfile){
 	my $mfiles = join(" ",@mfile);
 	my $xfiles = join(" ",@xfile);
-	$cmd = "python $dir/DelDiff.py -x $xfiles -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -i $minInfo -a $allHomo -o $outfile ";
+	if ($allHomo){
+		$cmd = "python $dir/DelDiff.py -x $xfiles -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -i $minInfo -a -o $outfile ";
+	}else{
+		$cmd = "python $dir/DelDiff.py -x $xfiles -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -i $minInfo -o $outfile ";
+	}
 	process_cmd($cmd);
 }
 else{
 	my $mfiles = join(" ",@mfile);
-	$cmd = "python $dir/DelDiff.py -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -i $minInfo -a $allHomo -o $outfile ";
+	if($contam){
+		print "------------------contaminated------------------\n";
+		$cmd = "python $dir/DelDiff.py -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -i $minInfo -a -e -o $outfile ";
+	}else{
+		print "------------------pure pool------------------\n";
+		$cmd = "python $dir/DelDiff.py -m $mfiles -f $minFR -r $orate -d $minDiff -b $minCRR -s $minSMD -i $minInfo -a -o $outfile ";
+	}
 	process_cmd($cmd);
 }
 
@@ -113,7 +131,12 @@ if ($gff){  #we will annotate deletion files
 	my $ofile_del = $ofilebase."_annot.bed";
 	#annotate all SNPs
 	#my $ofile_snp =
-	$cmd = "python $dir/VarAnnot.py -i $outfile -t b -f $gff -o $ofile_del";
+	if ($contam){
+		$cmd = "python $dir/VarAnnot.py -i $outfile -e -f $gff -o $ofile_del";
+	}else{
+		$cmd = "python $dir/VarAnnot.py -i $outfile -f $gff -o $ofile_del";
+	}
+	
 	process_cmd($cmd);
 }
 

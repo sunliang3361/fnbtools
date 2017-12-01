@@ -12,14 +12,8 @@ FNBTools has been tested on the following Linux distributions:
 
 ## Install from Source
 
-
-1. Download
-  * Run: `git clone https://github.com/noble-research-institute/fnbtools.git`
-  * Alternatively, you can go to [Releases](https://github.com/noble-research-institute/fnbtools/releases) and download fnbtools.tar.gz.  Then run `tar -xzvf fnbtools.tar.gz`)
-  * If you click the "Clone or Download" button in GitHub and choose to "Download ZIP", run `unzip fnbtools-master.zip`
-
+1. Run: `git clone` (or download fnbtools.tar.gz from Releases and run `tar -xzvf fnbtools.tar.gz`)
 2. Run: `sudo ./Install.sh`
-* If you are unable to execute Install.sh, run `chmod 755 Install.sh`
 3. If prompted with "Would you like to configure as much as possible automatically? [yes]", type **yes** and then press Enter. This will automatically configure Perl's CPAN utility so that additional Perl modules can be installed.
 4. If prompted with "Would you like me to automatically choose some CPAN mirror sites for you? [yes]", type **yes** and then press Enter.  This will automatically configure Perl's CPAN utility with a mirror site from which it can download Perl modules.
 
@@ -118,10 +112,11 @@ Running Step 1 using the example data set provided with this repository would pr
   * -h print this help message 
   * -c the control bedg file(s),used to filter out homo and heter deletion
   * -x the contorl bedg file(s),used to filter out homo deletions
+  * -e output deletion frequency when sample pool is contaminated ( can not be used with -x and -c)
   * -g input annotation file to annotate deletions     
-  * -a print all homo deletions in mutant including the deletions exist in control * sample [0|1, default:0]
-  * -r the overlapping rate between gaps and informative deletion at the same * genomic regions [default:0.9]
-  * -d the minimal distance between the breakpoint of informative reads and the * start postion of gap [default:20]
+  * -a print all homozyougs deletions in mutant sample including the deletions in control sample
+  * -r the overlapping rate between gaps and informative deletion at the same genomic regions [default:0.9]
+  * -d the minimal distance between the breakpoint of informative reads and the start postion of gap [default:20]
   * -b the minimal crossed reads when there is no clipped reads or small deletion reads [default:3]
   * -s the minimal small deletion reads [default:3]
   * -i the minimal total number of informative reads (clipped and small reads [default:3]
@@ -131,7 +126,8 @@ Running Step 1 using the example data set provided with this repository would pr
 
 1.	No control sample
 `fnbscan -n fnb -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g example/Mtruncatula_285_Mt4.0v1.gene.gff3`
-
+if mutant pool sample is contaminated, please use option '-e' to output all deletions withe frequencies.
+`fnbscan -n fnb -m fnb/fnb.mt4_chr1_mut_20x1.bedg -e -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g example/Mtruncatula_285_Mt4.0v1.gene.gff3`
 2.	Filter out all homozygous and heterozygous deletions in control samples
 `fnbscan -n fnb -c fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g example/Mtruncatula_285_Mt4.0v1.gene.gff3`
 
@@ -180,7 +176,7 @@ Running Step 2 using the example data set provided with this repository, along w
 
 ### Usage:
 
-`CircosVis [options] -l <bigDeletion.vcf> -o <output file>`
+`CircosVis -l bigDeletion.vcf -o circos.png`
 
 ### Parameters:
 

@@ -14,8 +14,9 @@ usage:
 	VarAnnot [options] -t type -i <input file> -o <output file>
 	
 example:
-	python VarAnnot.py -i result/AF_unique.txt -t s -f Mtruncatula_285_Mt4.0v1.gene.gff3 -o result/AF_unique_annot.txt
+	#python VarAnnot.py -i result/AF_unique.txt -t s -f Mtruncatula_285_Mt4.0v1.gene.gff3 -o result/AF_unique_annot.txt
     #python VarAnnot.py  -i result/fnb_big_deletion.txt -t b -f Mtruncatula_285_Mt4.0v1.gene.gff3 -o result/fnb_big_deletion_annot.txt
+    python VarAnnot.py  -i result/fnb_big_deletion.txt -e -f Mtruncatula_285_Mt4.0v1.gene.gff3 -o result/fnb_big_deletion_annot.txt
 
 """
 
@@ -98,7 +99,8 @@ geneAnnot = {} # (chr, pos) = geneID
 parser = argparse.ArgumentParser(description="VarAnnot annotate small variants (snp&small indel) and big deletions")
 parser.add_argument('--version', action='version', version='%(prog)s 1.0')
 parser.add_argument('-i', action='store', dest='ifile', help="one unique small/big variance file")
-parser.add_argument('-t', action='store', dest='ftype', help="b for big deletion")
+#parser.add_argument('-t', action='store', dest='ftype', help="b for big deletion")
+parser.add_argument('-e', action='store_true', dest='contam', help="pool sample is contaminated")
 parser.add_argument('-f', action='store', dest='ffile', help="gff3 annotation file")
 parser.add_argument('-o', action='store', dest='ofile', help="the output file name for unique AF files")
 #parser.add_argument('-r', action='store', default='8', type=float, dest='cutoff', help="reads covrage cutoff")
@@ -106,7 +108,8 @@ args = parser.parse_args()
 
 ifile = args.ifile
 ffile = args.ffile
-ftype = args.ftype
+#ftype = args.ftype
+contam = args.contam
 ofile = args.ofile
 #cutoff = args.cutoff (how many )
 
@@ -124,11 +127,12 @@ else :
 
 ############################# write unique variance to output file #############################
 FileOUT = open(ofile,"w")
-if ftype == "s":
-    #FileOUT.write("#CHROM\tPOS\tID\tREF\tALT\tAF_AVE\tGENE\n")
-    print "There is no s potion here"
-elif ftype == "b":
+#elif ftype == "b":
+if contam:
+    FileOUT.write("DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#\tDeletionFreq\tGenes\n")
+else:
     FileOUT.write("DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#\tGapStarts_position\tGapEnd_position\tDel_mutant\tDel_control\tHomo_Unique\tGenes\n")
+ 
 for chr, start,end in sorted(varInfo):
     FileOUT.write(varInfo[(chr,start,end)]+"\t"+str(geneAnnot[(chr,start,end)])+"\n")
     

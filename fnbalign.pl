@@ -30,8 +30,8 @@ my $usage = "USAGE:
 
 die "$usage\n" if (@ARGV == 0);
 
-#my $dir = "/usr/local/fnbtools";
-my $dir = "$FindBin::Bin";
+my $dir = "/usr/local/fnbtools";
+#my $dir = "$FindBin::Bin";
 my $genome;
 my $proj   = "fnb";                 
 my @rs1_originals;
@@ -187,11 +187,14 @@ foreach my $rs1 (@rs1_originals){
 		my ($del_n, $chr,$breakpoint,$breakpoint_end,$deletion,$suppRead) = split /\t/, $line;
 		my $fl = $breakpoint - 20 ;#$lib_len/2; #$lib_len/3; #the start position of left flanking region
 		my $fr = $breakpoint_end + 20; #$lib_len/2; #$lib_len/3; #the end position of right flanking region
+		my $del_st = $breakpoint + 1;
 		######################add flanking reads number here######################
 		open my $fl_depth, "samtools depth -r $chr:$fl-$breakpoint $result_temp/$proj.$rs1_file.ref.sort.bam |" or die $!;
 		open my $fr_depth, "samtools depth -r $chr:$breakpoint_end-$fr $result_temp/$proj.$rs1_file.ref.sort.bam |" or die $!;
+		open my $del_depth, "samtools depth -r $chr:$del_st-$breakpoint_end $result_temp/$proj.$rs1_file.ref.sort.bam |" or die $!;
 		my $fl_n = 0;
 		my $fr_n = 0;
+		my $del_n = 0;
 		
 		while(<$fl_depth>){
 			chomp;
@@ -203,13 +206,20 @@ foreach my $rs1 (@rs1_originals){
 			my @records = split /\t/,$_;
 			$fr_n = $fr_n + $records[2];
 		}
+		while(<$del_depth>){
+			chomp;
+			my @records = split /\t/,$_;
+			$del_n = $del_n + $records[2];
+		}
 		#my $flr = int($fl_n*2/$lib_len);
 		#my $frr = int($fr_n*2/$lib_len);
 		my $flr = int($fl_n/20);
 		my $frr = int($fr_n/20);
-		print BEDfix $line."FLR=$flr;FRR=$frr\n";
+		my $der = int($del_n/$deletion); #$der is the number of reads in deletion region.
+		print BEDfix $line."FLR=$flr;FRR=$frr;DER=$der\n";
 		close $fl_depth;
 		close $fr_depth;
+		close $del_depth;
 	}
 	close(BED);
 	close(BEDfix);

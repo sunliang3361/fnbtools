@@ -144,6 +144,28 @@ def identifyHomo(chr_infodel_m,chr_gap_m,minDiff_rep,minDiff,orate):
 					
 	return deletions
 
+def addDelFreq(chr_infodel_m):
+	deletions = {}
+	for chr in chr_infodel_m:
+		for (brkpt,brkpt_end,delInfo) in chr_infodel_m[chr]:
+			clr_n = int(delInfo.split("\t")[1].split(";")[0].split("=")[1])
+			crr_n = int(delInfo.split("\t")[1].split(";")[1].split("=")[1])
+			smd_n = int(delInfo.split("\t")[1].split(";")[2].split("=")[1])
+			del_n = int(delInfo.split("\t")[1].split(";")[5].split("=")[1])
+
+			freq = int((clr_n+smd_n+crr_n)/float(clr_n+smd_n+crr_n+del_n)*100)
+
+			del_meta =  str(brkpt_end)+"\t"+delInfo+"\t"+str(freq)+"%"
+			
+			deletions[(chr,brkpt)] = del_meta
+			
+	return deletions
+			
+				
+				
+			
+			
+
 def filterDels(chr_infodel_m,chr_infodel_c,minDiff_rep,minDiff,type):
 	deletions = {}
 	for (chr,brkpt) in chr_infodel_m:
@@ -236,18 +258,20 @@ parser.add_argument('--version', action='version', version='%(prog)s 1.0')
 parser.add_argument('-c', action='store', dest='cfile', nargs='*', help="one or multiple wild type bedg files, filter out homo and heter deletions")
 parser.add_argument('-x', action='store', dest='xfile', nargs='*', help="one or multiple wild type bedg files, filter out homo deletions only")
 parser.add_argument('-m', action='store', dest='mfile', nargs='*', help="one mutant sample bedg file")
+parser.add_argument('-e', action='store_true', dest='contam', help="pool sample is contaminated")
 parser.add_argument('-o', action='store', dest='ofile', help="the output file name for big file")
 parser.add_argument('-r', action='store', default='0.9', type=float, dest='orate', help="gap overlapping rates")
 parser.add_argument('-d', action='store', default='20', type=int, dest='minDiff', help="the minimal distance between the breakpoint and the start position of gap")
 parser.add_argument('-b', action='store', default='3', type=int, dest='minCRR', help="the minimal crossed reads when there is no clipped reads [default:3]")
 parser.add_argument('-s', action='store', default='3', type=int, dest='minSMD', help="the minimal small deletion reads [default:3]")
-parser.add_argument('-i', action='store', default='3', type=int, dest='minInfo', help="the minimal total number of informative reads (clipped and small reads [default:2]")
+parser.add_argument('-i', action='store', default='3', type=int, dest='minInfo', help="the minimal total number of informative reads (clipped and small reads [default:3]")
 parser.add_argument('-f', action='store', default='1', type=int, dest='minFR', help="the minimal flanking reads up and downstream of deletions")
-parser.add_argument('-a', action='store', default='0', type=int, dest='allHomo', help="print all homo deletions in mutant including the deletions exist in control sample")
+parser.add_argument('-a', action='store_true', dest='allHomo', help="print all homo deletions in mutant including the deletions exist in control sample")
 args = parser.parse_args()
 
 cfile = ""
 mfile = ""
+
 
 chr_gap_c = {} # this is the all chromose and their deletion postion for control samples
 chr_gap_m = {} # this is the all chromose and their deletion postion for mutant samples
@@ -261,6 +285,7 @@ deletions_fix = {}
 cfile = args.cfile
 xfile = args.xfile
 mfile = args.mfile
+contam = args.contam
 ofile = args.ofile
 orate = args.orate #overlapping between control gap and the mutant inforamtive deletion
 minDiff = args.minDiff #the minimal distance between the start position of informative deletion and the gap in the mutant.
@@ -311,10 +336,16 @@ elif xfile:
 	#fitler out homo deletions in controls
 	deletions = filterDels(chr_infodel_homo_m,chr_infodel_homo_c,minDiff_rep,minDiff,"homo")
 else:
-	print "no control file provided!"
-	chr_gap_m = read1File(mfile[0])
+	print "Note: no control file provided!"
 	chr_infodel_m = readInfoDel(mfile,minCRR,minSMD,minInfo,minFR,'m')
-	deletions = identifyHomo(chr_infodel_m,chr_gap_m,minDiff_rep,minDiff,orate)
+	if contam:
+		print "Note: contaminated pool!"
+		deletions = addDelFreq(chr_infodel_m)
+	else:
+		chr_gap_m = read1File(mfile[0])
+		deletions = identifyHomo(chr_infodel_m,chr_gap_m,minDiff_rep,minDiff,orate)
+
+
 	
 
 				
@@ -358,22 +389,25 @@ for (chr,brkpt) in deletions:
 	
 
 #FileOUT.write('Del#\tchr\tstart_position\tend_position\tdeletionLength\tbreakpoint_pos\tsupportRead\tdel_mutant\tdel_control\tHomo_Unique\n')
-FileOUT.write('DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#\tGapStarts_position\tGapEnd_position\tDel_mutant\tDel_control\tHomo_Unique\n')
+if contam:
+	FileOUT.write('DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#\tDeletionFreq\n')
+else:
+	FileOUT.write('DEL#\tChr\tBreakpointStart\tBreakpointEnd\tDeletionLength\tSuppRead#\tGapStarts_position\tGapEnd_position\tDel_mutant\tDel_control\tHomo_Unique\n')
 
 Del_num = 1;			
 for (chr,brkpt) in sorted(deletions_fix):
-	if allHomo == 0:
+	if not allHomo:
 		if cfile or xfile:
 			unique = deletions_fix[(chr,brkpt)].split("\t")[-1]
 			if unique == "Yes":
 				FileOUT.write(str(Del_num)+"\t"+chr+"\t"+str(brkpt)+"\t"+deletions_fix[(chr,brkpt)]+"\n")
 				Del_num = Del_num + 1
-		else:
+		# else:
+		# 	FileOUT.write(str(Del_num)+"\t"+chr+"\t"+str(brkpt)+"\t"+deletions_fix[(chr,brkpt)]+"\n")
+		# 	Del_num = Del_num + 1
+	else:
 			FileOUT.write(str(Del_num)+"\t"+chr+"\t"+str(brkpt)+"\t"+deletions_fix[(chr,brkpt)]+"\n")
 			Del_num = Del_num + 1
-	else:
-		FileOUT.write(str(Del_num)+"\t"+chr+"\t"+str(brkpt)+"\t"+deletions_fix[(chr,brkpt)]+"\n")
-		Del_num = Del_num + 1
 
 			
 			
