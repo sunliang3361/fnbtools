@@ -167,6 +167,7 @@ Running Step 2 using the example data set provided with this repository, along w
 * Del_mutant: 'Yes' represents deletions found in mutant samples	
 * Del_control: 'Yes' represents deletions found in control samples; 'No' represents no deletions found in control samples
 * Homo_Unique: 'Yes' represents deletions only exist in mutant samples but not in control sample; 'No' represents deletions exist in both mutant and control sample
+* DeletionFreq: Deletion frequency for contaminated pool
 * Genes (optional): This column will only show genes if deletions cover
 
 #### 2. BED file with annotation (optional)
