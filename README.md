@@ -190,7 +190,7 @@ Running Step 2 using the example data set provided with this repository, along w
 	REQUIRED -l the large deletion file
 	REQUIRED -o the output image file
 
-### Example:
+### Example (only for annotated deletion files):
 
 `circosvis  -l example/wen.S1_alldeletion_uniq_annot.bed -o fnb_circos.png`
 
