@@ -131,7 +131,7 @@ Running Step 1 using the example data set provided with this repository would pr
 1.	No control sample
 `fnbscan -n fnb -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g example/Mtruncatula_285_Mt4.0v1.gene.gff3`
 
-	If mutant pool sample is contaminated, please use option '-e' to output all deletions withe frequencies.
+	If mutant pool sample is contaminated, please use option '-e' to output all deletions with frequencies.
 
 	`fnbscan -n fnb -m fnb/fnb.mt4_chr1_mut_20x1.bedg -e -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g example/Mtruncatula_285_Mt4.0v1.gene.gff3`
 
