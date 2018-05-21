@@ -12,11 +12,7 @@ FNBTools has been tested on the following Linux distributions:
 
 ## Install from Source
 
-1. Download
-  * Run: `git clone https://github.com/noble-research-institute/fnbtools.git`
-  * Alternatively, you can go to [Releases](https://github.com/noble-research-institute/fnbtools/releases) and download fnbtools.tar.gz.  Then run `tar -xzvf fnbtools.tar.gz`
-  * If you click the "Clone or Download" button in GitHub and choose to "Download ZIP", run `unzip fnbtools-master.zip`
-
+1. Run: `git clone` (or download fnbtools.tar.gz from Releases and run `tar -xzvf fnbtools.tar.gz`)
 2. Run: `sudo ./Install.sh`
 3. If prompted with "Would you like to configure as much as possible automatically? [yes]", type **yes** and then press Enter. This will automatically configure Perl's CPAN utility so that additional Perl modules can be installed.
 4. If prompted with "Would you like me to automatically choose some CPAN mirror sites for you? [yes]", type **yes** and then press Enter.  This will automatically configure Perl's CPAN utility with a mirror site from which it can download Perl modules.
@@ -130,8 +126,7 @@ Running Step 1 using the example data set provided with this repository would pr
 
 1.	No control sample
 `fnbscan -n fnb -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g example/Mtruncatula_285_Mt4.0v1.gene.gff3`
-
-If mutant pool sample is contaminated, please use option '-e' to output all deletions withe frequencies.
+if mutant pool sample is contaminated, please use option '-e' to output all deletions withe frequencies.
 `fnbscan -n fnb -m fnb/fnb.mt4_chr1_mut_20x1.bedg -e -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g example/Mtruncatula_285_Mt4.0v1.gene.gff3`
 2.	Filter out all homozygous and heterozygous deletions in control samples
 `fnbscan -n fnb -c fnb/fnb.mt4_chr1_raw_20x1.bedg -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g example/Mtruncatula_285_Mt4.0v1.gene.gff3`
@@ -159,12 +154,13 @@ Running Step 2 using the example data set provided with this repository, along w
 * BreakpointStart: Start position of deletions
 * BreakpointEnd: End position of deletions
 * DeletionLength: Deletion length
-* SuppRead#: CLR represent the clipped reads number; CRR represents discordant reads number; SMD represents small deletion reads number; FLR represents the flanking supporting reads of deletions on the left; FRR represents the flanking supporting read number of deletions on the right 
+* SuppRead#: CLR represent the clipped reads number; CRR represents discordant reads number; SMD represents small deletion reads number; FLR represents the flanking supporting reads number of deletions on the left; FRR represents the flanking supporting read number of deletions on the right 
 * GapStarts_position: Start position of gaps	
 * GapEnd_position	: End position of gaps
 * Del_mutant: 'Yes' represents deletions found in mutant samples	
 * Del_control: 'Yes' represents deletions found in control samples; 'No' represents no deletions found in control samples
 * Homo_Unique: 'Yes' represents deletions only exist in mutant samples but not in control sample; 'No' represents deletions exist in both mutant and control sample
+* DeletionFreq: Deletion frequency for contaminated pool
 * Genes (optional): This column will only show genes if deletions cover
 
 #### 2. BED file with annotation (optional)
@@ -188,7 +184,7 @@ Running Step 2 using the example data set provided with this repository, along w
 	REQUIRED -l the large deletion file
 	REQUIRED -o the output image file
 
-### Example:
+### Example (only for annotated deletion files):
 
 `circosvis  -l example/wen.S1_alldeletion_uniq_annot.bed -o fnb_circos.png`
 

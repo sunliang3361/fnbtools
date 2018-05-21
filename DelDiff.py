@@ -339,7 +339,7 @@ else:
 	print "Note: no control file provided!"
 	chr_infodel_m = readInfoDel(mfile,minCRR,minSMD,minInfo,minFR,'m')
 	if contam:
-		print "Note: contaminated pool!"
+		print "Note: contaminated pool or need to output both heterzyougs and homozygous deletions with frequencies!"
 		deletions = addDelFreq(chr_infodel_m)
 	else:
 		chr_gap_m = read1File(mfile[0])
