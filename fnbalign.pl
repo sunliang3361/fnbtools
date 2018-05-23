@@ -184,7 +184,7 @@ foreach my $rs1 (@rs1_originals){
 			$flag ++;
 			next;
 		}
-		my ($del_n, $chr,$breakpoint,$breakpoint_end,$deletion,$suppRead) = split /\t/, $line;
+		my ($del_id, $chr,$breakpoint,$breakpoint_end,$deletion,$suppRead) = split /\t/, $line;
 		my $fl = $breakpoint - 20 ;#$lib_len/2; #$lib_len/3; #the start position of left flanking region
 		my $fr = $breakpoint_end + 20; #$lib_len/2; #$lib_len/3; #the end position of right flanking region
 		my $del_st = $breakpoint + 1;
