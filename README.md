@@ -44,7 +44,8 @@ FNBTools has been tested on the following Linux distributions:
 * REQUIRED -1 the paired read file 1
 * REQUIRED -2 the paired read file 2
 * REQUIRED -n the name of your project (output files will be placed in a directory with the name you provide)
-* OPTIONAL:    
+* OPTIONAL: 
+  * -e output deletion frequency for step 2   
   * -p <Num Num Num> cpu number for 'BWA mem', 'samtools view'  and 'samtools sort' [default 8 2 2]
   * -l <int> the size of library fragment  [default 500bp]      
   * -h print this help message  
@@ -56,6 +57,8 @@ Running the following will create a project directory named 'fnb' relative to wh
 
 `fnbalign  -n fnb -g example/mt4_chr1_2Mb.fa -1 example/mt4_chr1_raw_20x1.fq example/mt4_chr1_mut_20x1.fq -2 example/mt4_chr1_raw_20x2.fq example/mt4_chr1_mut_20x2.fq`
 
+If the mutant pool sample is contaminated or users need to output all deletions with frequencies for their samples, please use option '-e' to output all deletions with reads in the deletion region for Step2 1.1. Data process for this option is a little slower.
+`fnbalign  -n fnb -g example/mt4_chr1_2Mb.fa -1 example/mt4_chr1_raw_20x1.fq example/mt4_chr1_mut_20x1.fq -2 example/mt4_chr1_raw_20x2.fq example/mt4_chr1_mut_20x2.fq -e`
 
 ### Output:
 
@@ -127,7 +130,7 @@ Running Step 1 using the example data set provided with this repository would pr
 1.	No control sample
 `fnbscan -n fnb -m fnb/fnb.mt4_chr1_mut_20x1.bedg -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g example/Mtruncatula_285_Mt4.0v1.gene.gff3`
 
-	if mutant pool sample is contaminated or users need to output all deletions with frequencies for their samples, please use option '-e' to output all deletions withe frequencies.
+	1.1 if mutant pool sample is contaminated or users need to output all deletions with frequencies for their samples, please use option '-e' to output all deletions with frequencies.
 `fnbscan -n fnb -m fnb/fnb.mt4_chr1_mut_20x1.bedg -e -o fnb/fnb.mt4_chr1_alldeletion_20x.bed -g example/Mtruncatula_285_Mt4.0v1.gene.gff3`
 
 2.	Filter out all homozygous and heterozygous deletions in control samples
