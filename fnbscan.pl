@@ -16,7 +16,7 @@ my $usage = "USAGE:
 	OPTIONS:
 	-c the control bedg file(s),used to filter out homo and heter deletion
 	-x the contorl bedg file(s),used to filter out homo deletions
-	-e output deletion frequency when the pool sample is contaminated (cannot used together with -x and -c)
+	-e output deletion frequency  (cannot used together with -x and -c)
 	-g input annotation file to annotate deletions     
 	-h print this help message
 	-a print all homo deletions in mutant including the deletions exist in control sample

@@ -14,7 +14,8 @@ my $usage = "USAGE:
 	REQUIRED -1 the paired read file 1
 	REQUIRED -2 the paired read file 2
 	REQUIRED -n the the name of you project
-
+	OPTIONS:
+		-e output deletion frequency for step 2
 		-p <Num Num Num> cpu number for 'BWA mem', 'samtools view'  and 'samtools sort', [default 8 2 2]
 	    -l <int> the size of library fragment  [default 500bp]   
 		-h print this help message    
@@ -26,6 +27,8 @@ my $usage = "USAGE:
 		eg: perl fnbalign.pl -n 10x_351 -g mt4.fa -1 mt4_mut351_sim10x1.fq mt4_sim10x1.fq -2 mt4_mut351_sim10x2.fq mt4_sim10x2.fq
 		eg: perl fnbalign.pl -n 20x_351 -g mt4.fa -1 mt4_mut351_sim20x1.fq mt4_sim20x1.fq -2 mt4_mut351_sim20x2.fq mt4_sim20x2.fq
 		eg: perl fnbalign.pl -n 50x_351 -g mt4.fa -1 mt4_mut351_sim50x1.fq mt4_sim50x1.fq -2 mt4_mut351_sim50x2.fq mt4_sim50x2.fq
+		# output deletion frequency for step 2
+		eg: perl fnbalign.pl -n fnb -g mt4_chr1_2Mb.fa -1 mt4_chr1_raw_20x1.fq mt4_chr1_mut_20x1.fq -2 mt4_chr1_raw_20x2.fq mt4_chr1_mut_20x2.fq -e
 	";
 
 die "$usage\n" if (@ARGV == 0);
@@ -38,6 +41,7 @@ my @rs1_originals;
 my @rs2_originals;
 my $lib_len = 500;
 my @cpu;
+my $contam;
 
 
 my $help = '';
@@ -49,7 +53,7 @@ GetOptions(
 	'-n=s' =>\$proj,
 	'-l=i' =>\$lib_len,
     '-p=s@{3}' => \@cpu,
-	#'-p=i' =>\$cpu,
+	'-e' =>\$contam,
 	'-h' => \$help
 );
 
@@ -195,11 +199,10 @@ foreach my $rs1 (@rs1_originals){
 		######################add flanking reads number here######################
 		open my $fl_depth, "samtools depth -r $chr:$fl-$breakpoint $result_temp/$proj.$rs1_file.ref.sort.bam |" or die $!;
 		open my $fr_depth, "samtools depth -r $chr:$breakpoint_end-$fr $result_temp/$proj.$rs1_file.ref.sort.bam |" or die $!;
-		open my $del_depth, "samtools depth -r $chr:$del_st-$breakpoint_end $result_temp/$proj.$rs1_file.ref.sort.bam |" or die $!;
+		
 		my $fl_n = 0;
 		my $fr_n = 0;
-		my $del_n = 0;
-		
+				
 		while(<$fl_depth>){
 			chomp;
 			my @records = split /\t/,$_;
@@ -210,20 +213,29 @@ foreach my $rs1 (@rs1_originals){
 			my @records = split /\t/,$_;
 			$fr_n = $fr_n + $records[2];
 		}
-		while(<$del_depth>){
-			chomp;
-			my @records = split /\t/,$_;
-			$del_n = $del_n + $records[2];
-		}
+
 		#my $flr = int($fl_n*2/$lib_len);
 		#my $frr = int($fr_n*2/$lib_len);
 		my $flr = int($fl_n/20);
 		my $frr = int($fr_n/20);
-		my $der = int($del_n/$deletion); #$der is the number of reads in deletion region.
-		print BEDfix $line."FLR=$flr;FRR=$frr;DER=$der\n";
+		
+		if($contam){
+			my $del_n = 0;
+			open my $del_depth, "samtools depth -r $chr:$del_st-$breakpoint_end $result_temp/$proj.$rs1_file.ref.sort.bam |" or die $!;
+			while(<$del_depth>){
+				chomp;
+				my @records = split /\t/,$_;
+				$del_n = $del_n + $records[2];
+			}
+			my $der = int($del_n/$deletion); #$der is the number of reads in deletion region.
+			print BEDfix $line."FLR=$flr;FRR=$frr;DER=$der\n";
+			close $del_depth;
+		}else{
+			print BEDfix $line."FLR=$flr;FRR=$frr\n";
+		}
+
 		close $fl_depth;
 		close $fr_depth;
-		close $del_depth;
 	}
 	close(BED);
 	close(BEDfix);
