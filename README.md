@@ -57,7 +57,7 @@ Running the following will create a project directory named 'fnb' relative to wh
 
 `fnbalign  -n fnb -g example/mt4_chr1_2Mb.fa -1 example/mt4_chr1_raw_20x1.fq example/mt4_chr1_mut_20x1.fq -2 example/mt4_chr1_raw_20x2.fq example/mt4_chr1_mut_20x2.fq`
 
-If the mutant pool sample is contaminated or users need to output all deletions with frequencies for their samples, please use option '-e' to output all deletions with reads number in the deletion region for Step2 example 1.1. Data process for this option is a little slower.
+If the mutant pool sample is contaminated or users need to output all deletions with frequencies for their samples, please use option '-e' to output all deletions with reads number in the deletion region for Step2 example 1.1. Data process for this option may be slow.
 `fnbalign  -n fnb -g example/mt4_chr1_2Mb.fa -1 example/mt4_chr1_raw_20x1.fq example/mt4_chr1_mut_20x1.fq -2 example/mt4_chr1_raw_20x2.fq example/mt4_chr1_mut_20x2.fq -e`
 
 ### Output:
