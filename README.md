@@ -27,7 +27,7 @@ FNBTools has been tested on the following Linux distributions:
 
 ## Install manually
 
-If you can not install properly using the above instruction. You can manually install the prerequisite software yourself
+If you can not install properly using the above instruction. You can manually install the prerequisite software yourself.
 1. Dependencies installation:
 
 	The following programs need to be installed and the executable commands should be in $PATH of system:
