@@ -29,25 +29,33 @@ FNBTools has been tested on the following Linux distributions:
 
 If you can not install properly using the above instruction. You can manually install the prerequisite software yourself
 1. Dependencies installation:
-The following programs need to be installed and the executable commands should be in $PATH of system:
 
-Samtools (Version="1.3.1")
-BWA (Version="0.7.12")
-Bedtools (Version="2.26.0")
-Circos (Version="0.69-3")
+	The following programs need to be installed and the executable commands should be in $PATH of system:
+
+	Samtools (Version="1.3.1")
+	
+	BWA (Version="0.7.12")
+	
+	Bedtools (Version="2.26.0")
+	
+	Circos (Version="0.69-3")
 
 
 2. Copy codes to /usr/local/bin/
-    sudo cp fnbalign.pl /usr/local/bin/fnbalign
-    sudo chmod 755 /usr/local/bin/fnbalign
+    
+	`sudo cp fnbalign.pl /usr/local/bin/fnbalign`
+    
+	`sudo chmod 755 /usr/local/bin/fnbalign`
 
-    sudo cp fnbscan.pl /usr/local/bin/fnbscan
-    sudo chmod 755 /usr/local/bin/fnbscan
+    `sudo cp fnbscan.pl /usr/local/bin/fnbscan`
+    
+	`sudo chmod 755 /usr/local/bin/fnbscan`
 
-    sudo cp circosvis.py /usr/local/bin/circosvis
-    sudo chmod 755 /usr/local/bin/circosvis
+    `sudo cp circosvis.py /usr/local/bin/circosvis`
+    
+	`sudo chmod 755 /usr/local/bin/circosvis`
 
-    sudo cp -r ./ /usr/local/fnbtools
+    `sudo cp -r ./ /usr/local/fnbtools`
 
 # Using FNBTools
 * Recommendation: trim your NGS reads using Trimmomatics or other NGS trimmer before using FNBtools
