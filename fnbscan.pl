@@ -190,4 +190,3 @@ sub mytime() {
   my $year = localtime->year() + 1900;
   return "$wday, $mon $mday, $year: $hour:$min:$sec\t";
 }
-
