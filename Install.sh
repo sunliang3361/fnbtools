@@ -228,7 +228,7 @@ print_installed_software() {
     while true; do
         read -p "" yn
         case $yn in
-            [Yy]*) install_prerequisites; exit;;
+            [Yy]*) install_prerequisites;install_fnb_main; exit;;
             [Nn]*) printf "Unable to install FNB Toolkit.\n"; exit;;
             *) printf "Please answer yes or no.";;
         esac
