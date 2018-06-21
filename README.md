@@ -1,7 +1,9 @@
-# Our publication
+# Publication
 
 Please read our paper below for scientific questions:
+
 `Sun, Liang, et al. "FNBtools: A Software to Identify Homozygous Lesions in Deletion Mutant Populations." Frontiers in Plant Science 9 (2018): 976.`
+
 If our tool is useful in your project, please cite it!
 
 # Installing FNBTools
